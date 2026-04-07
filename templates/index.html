@@ -4,16 +4,37 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Network Encryption Simulator</title>
-    <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
-    <!-- FontAwesome for Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- Custom CSS -->
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <style>
+        .speed-control {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-top: 15px;
+            background: rgba(0,0,0,0.2);
+            padding: 10px;
+            border-radius: 6px;
+            border: 1px solid var(--border-color);
+        }
+        .canvas-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            height: 100%;
+        }
+        .canvas-full {
+            display: flex;
+            flex-direction: column;
+            width: 100%;
+            height: 100%;
+            overflow-y: auto;
+        }
+    </style>
 </head>
 <body>
 
-    <!-- Header Area -->
     <header>
         <div class="logo">
             <i class="fa-solid fa-shield-halved logo-icon"></i>
@@ -22,41 +43,13 @@
         <p class="subtitle">Computer Networks Project Simulation</p>
     </header>
 
-    <!-- Main App Container -->
     <div class="container">
         
-        <!-- LEFT PANEL: Crypto Steps -->
-        <div class="panel" id="left-panel">
-            <h2><i class="fa-solid fa-list-check"></i> Math / Crypto Steps</h2>
-            <div id="steps-output" class="steps-container" style="flex: 1; overflow-y: auto;">
-                <div class="step-card" style="opacity: 1; transform: translateX(0);">
-                    <div class="step-card-header"><i class="fa-solid fa-info-circle"></i> Awaiting Input</div>
-                    <div class="step-card-body">Math calculations and algorithmic processes will appear here in detailed cards.</div>
-                </div>
-            </div>
-        </div>
-
-        <!-- CENTER PANEL: Character Transformation Strip -->
-        <div class="panel" style="padding-top: 1.5rem; overflow-y: auto;">
-            <h2 style="margin-bottom: 2rem;"><i class="fa-solid fa-wand-magic-sparkles"></i> Character Transformation</h2>
-            
-            <div id="flow-bar" class="flow-bar" style="text-align: center; font-size: 1.5rem; font-weight: bold; margin-bottom: 2rem; color: var(--accent); opacity: 0; transition: opacity 0.5s;">
-            </div>
-
-            <div id="char-strip" class="char-strip" style="display: flex; flex-direction: column; gap: 1rem; align-items: center; justify-content: center; overflow-x: auto; padding: 1rem;">
-            </div>
-
-            <div id="crypto-status" style="margin-top: 3rem; padding: 1rem 2rem; background: rgba(0,0,0,0.2); border: 1px dashed var(--border-color); border-radius: 8px; color: var(--text-secondary); text-align: center; min-width: 300px;">
-                Ready for encryption sequence...
-            </div>
-        </div>
-
-        <!-- RIGHT PANEL: Inputs & Outputs -->
+        <!-- LEFT PANEL: Inputs & Outputs -->
         <div class="panel">
             <h2><i class="fa-solid fa-terminal"></i> Configuration</h2>
             
             <form id="sim-form">
-
                 <div class="form-group">
                     <label for="algorithm"><i class="fa-solid fa-microchip"></i> Select Algorithm</label>
                     <select id="algorithm" required>
@@ -79,7 +72,13 @@
                     <input type="text" id="key" placeholder="Enter key...">
                 </div>
 
-                <button type="submit" class="btn" id="run-btn">
+                <div class="speed-control">
+                    <label style="margin:0;"><i class="fa-solid fa-gauge-high"></i> Speed:</label>
+                    <input type="range" id="anim-speed" min="1" max="4" value="1" step="1" title="Animation Speed">
+                    <span id="speed-label" style="font-size: 0.8rem; font-weight: bold; color: var(--accent);">1x</span>
+                </div>
+
+                <button type="submit" class="btn" id="run-btn" style="margin-top: 15px;">
                     <i class="fa-solid fa-play"></i> <span id="btn-text">Run Simulation</span>
                 </button>
             </form>
@@ -95,12 +94,45 @@
                 <label>Decrypted Result (at Receiver)</label>
                 <textarea id="decrypted-output" class="readonly-field" readonly placeholder="Recovered text will appear here..."></textarea>
             </div>
+        </div>
+
+        <!-- RIGHT PANEL: Visualization Canvas -->
+        <div class="panel" style="padding-top: 1.5rem; overflow: hidden; background: radial-gradient(circle at center, rgba(30, 41, 59, 0.5), var(--panel-bg));">
+            <h2 style="margin-bottom: 2rem;"><i class="fa-solid fa-eye"></i> Operations Canvas</h2>
             
+            <div id="algo-canvas" class="canvas-full">
+                <div id="flow-bar" class="flow-bar" style="text-align: center; font-size: 1.5rem; font-weight: bold; margin-bottom: 1.5rem; color: var(--accent); opacity: 0; transition: opacity 0.5s;"></div>
+
+                <!-- Custom Algorithm Visualization Containers -->
+                <div id="caesar-visuals" style="display: none; align-items: center; justify-content: center; margin-bottom: 2rem; min-height: 100px;"></div>
+                <div id="vigenere-visuals" style="display: none; align-items: center; justify-content: center; margin-bottom: 2rem; min-height: 100px;"></div>
+                <div id="aes-visuals" style="display: none; margin-bottom: 2rem; min-height: 100px;"></div>
+                <div id="rsa-visuals" style="display: none; margin-bottom: 2rem; min-height: 100px;"></div>
+                
+                <div class="canvas-grid" id="standard-canvas">
+                    <!-- Left Column of Canvas: Step Cards -->
+                    <div id="steps-output" class="steps-container" style="overflow-y: auto; max-height: 500px; padding-right: 15px;"></div>
+                    
+                    <!-- Right Column of Canvas: Strip -->
+                    <div id="char-strip-container" style="display: flex; flex-direction: column; align-items: center; justify-content: flex-start; overflow-x: auto; padding-top: 1rem;">
+                        <div id="char-strip" class="char-strip" style="display: flex; flex-direction: column; gap: 1rem; align-items: center;"></div>
+                    </div>
+                </div>
+
+                <div id="crypto-status" style="margin-top: auto; padding: 1rem 2rem; background: rgba(0,0,0,0.2); border: 1px dashed var(--border-color); border-radius: 8px; color: var(--text-secondary); text-align: center; flex-shrink: 0;">
+                    Awaiting configuration...
+                </div>
+            </div>
         </div>
 
     </div>
 
     <!-- Scripts -->
-    <script src="{{ url_for('static', filename='js/script.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/animCaesar.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/animVigenere.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/animAES.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/animRSA.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/animSHA.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
 </body>
 </html>

@@ -1,8 +1,6 @@
-# =============================================================================
 # utils/vigenere.py
-# Member 2: Vigenère Cipher Implementation
+# Vigenère Cipher Implementation
 # Polyalphabetic substitution with key expansion visualization
-# =============================================================================
 
 def vigenere_encrypt(plaintext: str, key: str) -> dict:
     """

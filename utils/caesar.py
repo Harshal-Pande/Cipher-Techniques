@@ -1,8 +1,6 @@
-# =============================================================================
 # utils/caesar.py
-# Member 1: Caesar Cipher Implementation
+# Caesar Cipher Implementation
 # Performs character-level shift encryption with full step-by-step breakdown
-# =============================================================================
 
 def caesar_encrypt(plaintext: str, shift: int) -> dict:
     """

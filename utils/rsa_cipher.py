@@ -1,8 +1,6 @@
-# =============================================================================
 # utils/rsa_cipher.py
-# Member 4: RSA Encryption using cryptography library
+# RSA Encryption using cryptography library
 # Demonstrates key generation math and encryption/decryption formulas
-# =============================================================================
 
 import base64
 from cryptography.hazmat.primitives.asymmetric import rsa, padding as rsa_padding

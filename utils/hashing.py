@@ -1,8 +1,6 @@
-# =============================================================================
 # utils/hashing.py
-# Member 5: SHA-256 Hashing Integration
+# SHA-256 Hashing Integration
 # Demonstrates one-way cryptographic hashing and the avalanche effect
-# =============================================================================
 
 import hashlib
 
