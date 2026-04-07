@@ -1,8 +1,8 @@
-# =============================================================================
+# 
 # utils/aes_cipher.py
 # Member 3: AES-256 Encryption using cryptography library
 # Demonstrates conceptual AES round steps alongside actual encryption
-# =============================================================================
+# 
 
 import os
 import base64

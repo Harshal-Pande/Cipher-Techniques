@@ -5,26 +5,25 @@ document.addEventListener('DOMContentLoaded', () => {
     const keyLabel = document.getElementById('key-label');
     const form = document.getElementById('sim-form');
     const btnText = document.getElementById('btn-text');
-    
+
     // UI Elements
     const stepsOutput = document.getElementById('steps-output');
     const encryptedOutput = document.getElementById('encrypted-output');
     const decryptedOutput = document.getElementById('decrypted-output');
     const decryptGroup = document.getElementById('decrypt-group');
-    
-    // Visualization Elements
-    const packet = document.getElementById('packet');
-    const statusIndicator = document.getElementById('status-indicator');
-    const senderNode = document.getElementById('sender-node');
-    const receiverNode = document.getElementById('receiver-node');
+
+    // Center Panel UI
+    const flowBar = document.getElementById('flow-bar');
+    const charStrip = document.getElementById('char-strip');
+    const cryptoStatus = document.getElementById('crypto-status');
 
     // Handle Algorithm Change Logic
     algoSelect.addEventListener('change', (e) => {
         const val = e.target.value;
         keyGroup.classList.remove('hidden');
         keyInput.required = true;
-        
-        switch(val) {
+
+        switch (val) {
             case 'caesar':
                 keyLabel.innerHTML = '<i class="fa-solid fa-key"></i> Shift Value (Integer)';
                 keyInput.type = 'number';
@@ -41,11 +40,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 keyInput.placeholder = 'Enter secret password';
                 break;
             case 'rsa':
-                keyGroup.classList.add('hidden'); // RSA generates its own pairs in our sim
+                keyGroup.classList.add('hidden');
                 keyInput.required = false;
                 break;
             case 'sha256':
-                keyGroup.classList.add('hidden'); // Hashing doesn't need external key here
+                keyGroup.classList.add('hidden');
                 keyInput.required = false;
                 break;
             default:
@@ -54,30 +53,92 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
+    const delay = ms => new Promise(res => setTimeout(res, ms));
+
+    function parseStep(step) {
+        const match = step.match(/'(.+?)'.*?(?:→|->|to).*?'(.+?)'$/);
+        if (!match) return null;
+
+        return {
+            from: match[1],
+            to: match[2]
+        };
+    }
+
+    function renderStrip(input, output) {
+        let inputSpanHTML = input.split('').map(c => `<span>${c === ' ' ? '&nbsp;' : c}</span>`).join('');
+        let outputSpanHTML = output.split('').map(c => `<span>${c === ' ' ? '&nbsp;' : c}</span>`).join('');
+        
+        // If the lengths are drastically different (e.g. AES/RSA), just show standard text blocks or limit chars
+        if(output.length > input.length * 5) {
+             inputSpanHTML = input.split('').slice(0,10).map(c => `<span>${c}</span>`).join('') + (input.length>10?'<span>...</span>':'');
+             outputSpanHTML = output.split('').slice(0,10).map(c => `<span>${c}</span>`).join('') + (output.length>10?'<span>...</span>':'');
+        }
+
+        charStrip.innerHTML = `
+            <div class="row">${inputSpanHTML}</div>
+            <div style="font-size: 24px; color: var(--border-color);"><i class="fa-solid fa-arrow-down"></i></div>
+            <div class="row" style="margin-bottom: 20px;">${outputSpanHTML}</div>
+        `;
+    }
+
+    async function animateSteps(steps) {
+        if (!steps || steps.length === 0) return;
+        
+        for (let i = 0; i < steps.length; i++) {
+            if (!steps[i]) continue;
+            
+            const parsed = parseStep(steps[i]);
+            const card = document.createElement("div");
+            card.className = "transform-card";
+
+            if (parsed) {
+                card.innerHTML = `
+                    <div class="char">${parsed.from}</div>
+                    <div class="arrow">→</div>
+                    <div class="char result">${parsed.to}</div>
+                `;
+            } else {
+                // Fallback for AES, RSA, SHA calculations which are non-character mappings
+                card.style.display = "block";
+                card.style.fontSize = "14px";
+                card.style.lineHeight = "1.4";
+                card.style.padding = "15px";
+                const cleanStr = steps[i].replace(/^\[\d+\]\s*/, '');
+                card.innerHTML = `<span style="color:var(--text-secondary);">${cleanStr}</span>`;
+            }
+
+            stepsOutput.appendChild(card);
+            stepsOutput.scrollTop = stepsOutput.scrollHeight;
+            
+            await delay(200);
+        }
+    }
+
     // Form Submit Logic
     form.addEventListener('submit', async (e) => {
         e.preventDefault();
-        
-        // Reset Visuals
-        btnText.innerText = "Simulating...";
-        stepsOutput.innerHTML = '<div class="step-line" style="color: var(--text-secondary);">Initializing...</div>';
+
+        // Reset UI
+        btnText.innerText = "Processing Cipher...";
+        stepsOutput.innerHTML = '';
         encryptedOutput.value = '';
         decryptedOutput.value = '';
         decryptGroup.classList.remove('hidden');
         
-        // Start animation
-        packet.classList.add('animate');
-        statusIndicator.innerText = "Encrypting & Transmitting...";
-        statusIndicator.classList.add('active');
-        senderNode.style.borderColor = "var(--success)";
-        senderNode.style.boxShadow = "0 0 20px var(--success)";
+        cryptoStatus.innerText = "Running Cryptographic Algorithms...";
+        cryptoStatus.style.color = "var(--accent)";
+        flowBar.style.opacity = '0';
+        charStrip.innerHTML = '';
+        
+        const inputText = document.getElementById('plaintext').value;
 
         try {
             const response = await fetch('/process', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
-                    text: document.getElementById('plaintext').value,
+                    text: inputText,
                     algorithm: algoSelect.value,
                     key: keyInput.value
                 })
@@ -89,55 +150,31 @@ document.addEventListener('DOMContentLoaded', () => {
                 throw new Error(data.error || "Server error occurred");
             }
 
-            // Simulate slight delay for visualization impact
-            setTimeout(() => {
-                // Populate Output Fields
-                encryptedOutput.value = data.encrypted || '';
-                
-                if (algoSelect.value === 'sha256') {
-                    // Hashing has no decryption
-                    decryptGroup.classList.add('hidden');
-                } else {
-                    decryptedOutput.value = data.decrypted || '';
-                }
+            // Top flowbar input to output summary
+            flowBar.innerText = `${inputText} → ${data.encrypted}`;
+            flowBar.style.opacity = '1';
 
-                // Populate Steps Text
-                stepsOutput.innerHTML = '';
-                if(data.steps && data.steps.length > 0) {
-                    data.steps.forEach((step, index) => {
-                        const div = document.createElement('div');
-                        div.className = 'step-line fade-in';
-                        div.style.animationDelay = `${index * 0.05}s`;
-                        // Basic escaping to prevent HTML injection issues from steps text
-                        div.textContent = step; 
-                        stepsOutput.appendChild(div);
-                    });
-                }
-                
-                // End Network Viz
-                senderNode.style.borderColor = "var(--accent)";
-                senderNode.style.boxShadow = "0 0 15px var(--glow)";
-                receiverNode.style.borderColor = "var(--success)";
-                receiverNode.style.boxShadow = "0 0 20px var(--success)";
-                statusIndicator.innerText = "Transmission Complete & Secured";
-                
-                setTimeout(() => {
-                    packet.classList.remove('animate');
-                    receiverNode.style.borderColor = "var(--accent)";
-                    receiverNode.style.boxShadow = "0 0 15px var(--glow)";
-                    statusIndicator.classList.remove('active');
-                    statusIndicator.innerText = "Idle";
-                }, 1500);
+            // Start step-by-step logic
+            await animateSteps(data.steps);
 
-            }, 800);
+            // Once steps finish, show character strip result
+            await delay(500);
+            renderStrip(inputText, data.encrypted);
+            cryptoStatus.innerText = "Encryption Complete!";
+            cryptoStatus.style.color = "var(--success)";
+
+            // Output Results
+            encryptedOutput.value = data.encrypted || '';
+            if (algoSelect.value === 'sha256') {
+                decryptGroup.classList.add('hidden');
+            } else {
+                decryptedOutput.value = data.decrypted || '';
+            }
 
         } catch (error) {
-            stepsOutput.innerHTML = `<div class="step-line" style="color: var(--error);">Error: ${error.message}</div>`;
-            statusIndicator.innerText = "Transmission Failed";
-            statusIndicator.classList.remove('active');
-            statusIndicator.style.color = "var(--error)";
-            statusIndicator.style.borderColor = "var(--error)";
-            packet.classList.remove('animate');
+            stepsOutput.innerHTML = `<div class="transform-card" style="border-left-color: var(--error); display:block;"><span style="color:var(--error);"><i class="fa-solid fa-triangle-exclamation"></i> Error: ${error.message}</span></div>`;
+            cryptoStatus.innerText = "Encryption Failed!";
+            cryptoStatus.style.color = "var(--error)";
         } finally {
             btnText.innerText = "Run Simulation";
         }

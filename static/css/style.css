@@ -191,6 +191,56 @@ input:focus, select:focus, textarea:focus {
     border-left: 2px solid var(--accent);
 }
 
+/* Card Based Steps for Left Panel */
+.step-card {
+    background: rgba(15, 23, 42, 0.8);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    padding: 1rem;
+    margin-bottom: 1rem;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    transform: translateX(-30px) scale(0.95);
+    opacity: 0;
+    transition: transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275), opacity 0.5s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.step-card::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 4px;
+    background: var(--accent);
+}
+
+.step-card.show {
+    transform: translateX(0) scale(1);
+    opacity: 1;
+}
+
+.step-card-header {
+    font-weight: 600;
+    color: var(--accent);
+    margin-bottom: 0.5rem;
+    font-size: 0.95rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    border-bottom: 1px solid rgba(255,255,255,0.05);
+    padding-bottom: 0.4rem;
+}
+
+.step-card-body {
+    color: var(--text-primary);
+    font-size: 0.85rem;
+    line-height: 1.5;
+    word-break: break-word;
+}
+
+
 /* Network Visualization (Center Panel) */
 .network-viz {
     display: flex;
@@ -249,26 +299,29 @@ input:focus, select:focus, textarea:focus {
     z-index: 1;
 }
 
-/* Simulated Packet Animation */
+/* Simulated Packet - Controllable via JS */
 .packet {
     position: absolute;
-    top: -4px;
-    width: 10px;
-    height: 10px;
-    background-color: var(--success);
-    border-radius: 50%;
-    box-shadow: 0 0 10px var(--success);
+    top: -10px; /* Aligned vertically on the line */
+    left: 0%;
+    width: 22px;
+    height: 22px;
+    background-color: var(--accent);
+    border: 2px solid #fff;
+    border-radius: 4px; /* Slightly square like a packet */
+    box-shadow: 0 0 10px var(--accent);
     opacity: 0;
+    transition: left 0.8s ease-in-out, opacity 0.3s, background-color 0.3s, transform 0.3s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 10;
 }
-
-.packet.animate {
-    animation: sendPacket 2s infinite linear;
+.packet.show {
+    opacity: 1;
 }
-
-@keyframes sendPacket {
-    0% { left: 0; opacity: 1; }
-    90% { left: 100%; opacity: 1; }
-    100% { left: 100%; opacity: 0; }
+.packet.scale-up {
+    transform: scale(1.3);
 }
 
 /* Overlay Info in Viz */
@@ -339,4 +392,77 @@ input:focus, select:focus, textarea:focus {
 /* Key Input toggling */
 .hidden {
     display: none;
+}
+/* Tabs Implementation */
+.tabs { display: flex; border-bottom: 1px solid var(--border-color); margin-bottom: 1rem; }
+.tab-btn { background: none; border: none; padding: 0.8rem 1.5rem; color: var(--text-secondary); cursor: pointer; font-family: var(--font-main); font-weight: 500; font-size: 0.95rem; border-bottom: 2px solid transparent; transition: all 0.3s ease; }
+.tab-btn:hover { color: var(--text-primary); }
+.tab-btn.active { color: var(--accent); border-bottom-color: var(--accent); }
+.tab-content { display: none; }
+.tab-content.active { display: block; animation: fadeIn 0.3s forwards; }
+
+/* Transformation Animation CSS */
+.transform-card {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: #1e293b;
+    padding: 12px;
+    margin-bottom: 10px;
+    border-radius: 10px;
+    font-size: 18px;
+    opacity: 0;
+    transform: translateY(10px);
+    animation: slideInAnim 0.4s forwards;
+    border-left: 4px solid var(--accent);
+}
+
+.char {
+    background: #0f172a;
+    padding: 10px 14px;
+    border-radius: 6px;
+    font-weight: bold;
+    min-width: 45px;
+    text-align: center;
+}
+
+.result {
+    background: #10b981;
+    color: #fff;
+}
+
+.arrow {
+    font-size: 20px;
+    color: #3b82f6;
+}
+
+@keyframes slideInAnim {
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.char-strip .row {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+    justify-content: center;
+}
+.char-strip .row span {
+    width: 2.5rem;
+    height: 2.5rem;
+    background: #1e293b;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 6px;
+    font-family: var(--font-mono);
+    font-weight: bold;
+    border: 1px solid var(--border-color);
+}
+.char-strip .row:last-child span {
+    background: rgba(16, 185, 129, 0.2);
+    border-color: #10b981;
+    color: #10b981;
 }
