@@ -79,7 +79,7 @@
                 </div>
 
                 <button type="submit" class="btn" id="run-btn" style="margin-top: 15px;">
-                    <i class="fa-solid fa-play"></i> <span id="btn-text">Run Simulation</span>
+                    <i class="fa-solid fa-lock"></i> <span id="btn-text">Execute Encryption</span>
                 </button>
             </form>
 
@@ -90,8 +90,11 @@
                 <textarea id="encrypted-output" class="readonly-field" readonly placeholder="Calculated output will appear here..."></textarea>
             </div>
 
-            <div class="form-group" id="decrypt-group">
-                <label>Decrypted Result (at Receiver)</label>
+            <div class="form-group hidden" id="decrypt-group">
+                <label>Decryption Sequence</label>
+                <button type="button" class="btn" id="run-decrypt-btn" style="margin-bottom: 10px; background-color: var(--success);">
+                    <i class="fa-solid fa-unlock-keyhole"></i> <span>Execute Decryption Process</span>
+                </button>
                 <textarea id="decrypted-output" class="readonly-field" readonly placeholder="Recovered text will appear here..."></textarea>
             </div>
         </div>

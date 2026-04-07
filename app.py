@@ -21,7 +21,8 @@ def perform_encryption(algo, text, key):
         return {
             "encrypted": enc_result['encrypted'],
             "decrypted": dec_result['decrypted'],
-            "steps": enc_result['steps'] + [""] + dec_result['steps']
+            "encrypt_steps": enc_result['steps'],
+            "decrypt_steps": dec_result['steps']
         }
     elif algo == 'vigenere':
         if not key.isalpha():
@@ -31,7 +32,8 @@ def perform_encryption(algo, text, key):
         return {
             "encrypted": enc_result['encrypted'],
             "decrypted": dec_result['decrypted'],
-            "steps": enc_result['steps'] + [""] + dec_result['steps']
+            "encrypt_steps": enc_result['steps'],
+            "decrypt_steps": dec_result['steps']
         }
     elif algo == 'aes':
         if not key:
@@ -41,7 +43,8 @@ def perform_encryption(algo, text, key):
         return {
             "encrypted": enc_result['encrypted'],
             "decrypted": dec_result['decrypted'],
-            "steps": enc_result['steps'] + [""] + dec_result['steps']
+            "encrypt_steps": enc_result['steps'],
+            "decrypt_steps": dec_result['steps']
         }
     elif algo == 'rsa':
         enc_result = rsa_encrypt(text)
@@ -49,10 +52,17 @@ def perform_encryption(algo, text, key):
         return {
             "encrypted": enc_result['encrypted'],
             "decrypted": dec_result['decrypted'],
-            "steps": enc_result['steps'] + [""] + dec_result['steps']
+            "encrypt_steps": enc_result['steps'],
+            "decrypt_steps": dec_result['steps']
         }
     elif algo == 'sha256':
-        return sha256_hash(text)
+        hash_res = sha256_hash(text)
+        return {
+            "encrypted": hash_res['encrypted'],
+            "decrypted": hash_res['decrypted'],
+            "encrypt_steps": hash_res['steps'],
+            "decrypt_steps": []
+        }
     else:
         raise ValueError("Unknown algorithm.")
 

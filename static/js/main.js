@@ -82,18 +82,23 @@ document.addEventListener('DOMContentLoaded', () => {
     window.animDelay = () => new Promise(res => setTimeout(res, baseDelay));
     window.getBaseDelay = () => baseDelay;
 
-    // Form Submit Logic
+    let cacheData = null;
+    let cacheInputText = "";
+    let cacheAlgo = "";
+
+    // Form Submit Logic (Encrypt Phase)
     form.addEventListener('submit', async (e) => {
         e.preventDefault();
 
         // Reset UI
-        btnText.innerText = "Processing Cipher...";
+        btnText.innerText = "Encrypting...";
         stepsOutput.innerHTML = '';
         encryptedOutput.value = '';
         decryptedOutput.value = '';
-        decryptGroup.classList.remove('hidden');
+        decryptGroup.classList.add('hidden');
+        document.getElementById('run-decrypt-btn').disabled = false;
         
-        cryptoStatus.innerText = "Running Cryptographic Algorithms...";
+        cryptoStatus.innerText = "Running Encryption Data Flow...";
         cryptoStatus.style.color = "var(--accent)";
         flowBar.style.opacity = '0';
         charStrip.innerHTML = '';
@@ -119,34 +124,39 @@ document.addEventListener('DOMContentLoaded', () => {
                 throw new Error(data.error || "Server error occurred");
             }
 
+            cacheData = data;
+            cacheInputText = inputText;
+            cacheAlgo = algo;
+
             flowBar.innerText = `${inputText} → ${data.encrypted}`;
             flowBar.style.opacity = '1';
 
-            // Route execution to specific algorithm visualizers
+            // Route execution (passing encrypt_steps as data.steps)
+            const encryptPayload = { ...data, steps: data.encrypt_steps };
+
             if (algo === 'caesar' && window.AnimCaesar) {
-                await window.AnimCaesar.execute(inputText, data, stepsOutput, charStrip);
+                await window.AnimCaesar.execute(inputText, encryptPayload, stepsOutput, charStrip);
             } else if (algo === 'vigenere' && window.AnimVigenere) {
-                await window.AnimVigenere.execute(inputText, data, stepsOutput, charStrip);
+                await window.AnimVigenere.execute(inputText, encryptPayload, stepsOutput, charStrip);
             } else if (algo === 'aes' && window.AnimAES) {
-                await window.AnimAES.execute(inputText, data, stepsOutput, charStrip);
+                await window.AnimAES.execute(inputText, encryptPayload, stepsOutput, charStrip);
             } else if (algo === 'rsa' && window.AnimRSA) {
-                await window.AnimRSA.execute(inputText, data, stepsOutput, charStrip);
+                await window.AnimRSA.execute(inputText, encryptPayload, stepsOutput, charStrip);
             } else if (algo === 'sha256' && window.AnimSHA) {
-                await window.AnimSHA.execute(inputText, data, stepsOutput, charStrip);
+                await window.AnimSHA.execute(inputText, encryptPayload, stepsOutput, charStrip);
             } else {
-                // Fallback for missing anim module (use basic one)
-                await fallbackAnimation(inputText, data, stepsOutput, charStrip);
+                await fallbackAnimation(inputText, encryptPayload, stepsOutput, charStrip);
             }
 
-            cryptoStatus.innerText = "Encryption Complete!";
+            cryptoStatus.innerText = "Encryption Complete. Output Ready.";
             cryptoStatus.style.color = "var(--success)";
 
             // Output Results
             encryptedOutput.value = data.encrypted || '';
-            if (algo === 'sha256') {
-                decryptGroup.classList.add('hidden');
-            } else {
-                decryptedOutput.value = data.decrypted || '';
+            
+            // Un-hide Decrypt Phase Button if not a hash
+            if (algo !== 'sha256') {
+                decryptGroup.classList.remove('hidden');
             }
 
         } catch (error) {
@@ -154,9 +164,50 @@ document.addEventListener('DOMContentLoaded', () => {
             cryptoStatus.innerText = "Encryption Failed!";
             cryptoStatus.style.color = "var(--error)";
         } finally {
-            btnText.innerText = "Run Simulation";
+            btnText.innerText = "Execute Encryption";
         }
     });
+
+    // Decrypt Phase Action
+    const decryptBtn = document.getElementById('run-decrypt-btn');
+    if (decryptBtn) {
+        decryptBtn.addEventListener('click', async () => {
+            if (!cacheData || cacheAlgo === 'sha256') return;
+            
+            decryptBtn.disabled = true;
+            stepsOutput.innerHTML = '';
+            charStrip.innerHTML = '';
+            
+            cryptoStatus.innerText = "Running Decryption Flow...";
+            cryptoStatus.style.color = "var(--accent)";
+            
+            flowBar.style.opacity = '0';
+            await delay(300);
+            flowBar.innerText = `${cacheData.encrypted.substring(0,25)}${cacheData.encrypted.length > 25 ? '...' : ''} → ${cacheData.decrypted}`;
+            flowBar.style.opacity = '1';
+
+            const decryptPayload = { ...cacheData, steps: cacheData.decrypt_steps, encrypted: cacheData.decrypted };
+
+            // Start animation loop for decryption mapping
+            if (cacheAlgo === 'caesar' && window.AnimCaesar) {
+                await window.AnimCaesar.execute(cacheData.encrypted, decryptPayload, stepsOutput, charStrip);
+            } else if (cacheAlgo === 'vigenere' && window.AnimVigenere) {
+                await window.AnimVigenere.execute(cacheData.encrypted, decryptPayload, stepsOutput, charStrip);
+            } else if (cacheAlgo === 'aes' && window.AnimAES) {
+                await window.AnimAES.execute(cacheData.encrypted, decryptPayload, stepsOutput, charStrip);
+            } else if (cacheAlgo === 'rsa' && window.AnimRSA) {
+                await window.AnimRSA.execute(cacheData.encrypted, decryptPayload, stepsOutput, charStrip);
+            } else {
+                await fallbackAnimation(cacheData.encrypted, decryptPayload, stepsOutput, charStrip);
+            }
+            
+            decryptedOutput.value = cacheData.decrypted || '';
+            cryptoStatus.innerText = "Decryption Complete. Message Recovered.";
+            cryptoStatus.style.color = "var(--success)";
+        });
+    }
+
+    const delay = ms => new Promise(res => setTimeout(res, ms));
 
     async function fallbackAnimation(input, data, stepsCont, charCont) {
         if (!data.steps) return;
