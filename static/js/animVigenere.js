@@ -74,6 +74,8 @@ window.AnimVigenere = {
             const card = document.createElement("div");
             card.className = "transform-card";
 
+            let activeSpans = [];
+
             if (parsed && parsed.type === 'math') {
                 const isUpper = parsed.from === parsed.from.toUpperCase();
                 const base = isUpper ? 65 : 97;
@@ -103,6 +105,7 @@ window.AnimVigenere = {
                 
                 const spanIn = document.createElement("span");
                 spanIn.innerHTML = parsed.from === ' ' ? '&nbsp;' : parsed.from;
+                spanIn.classList.add("char-active");
                 rowIn.appendChild(spanIn);
                 
                 const spanKey = document.createElement("span");
@@ -110,11 +113,15 @@ window.AnimVigenere = {
                 spanKey.style.border = "none";
                 spanKey.style.height = "auto";
                 spanKey.innerText = `+${parsed.key}`;
+                spanKey.classList.add("char-active");
                 rowKey.appendChild(spanKey);
 
                 const spanOut = document.createElement("span");
                 spanOut.innerHTML = parsed.to === ' ' ? '&nbsp;' : parsed.to;
+                spanOut.classList.add("char-active");
                 rowOut.appendChild(spanOut);
+
+                activeSpans.push(spanIn, spanOut, spanKey);
                 
             } else if (parsed && parsed.type === 'keep') {
                 card.innerHTML = `
@@ -125,6 +132,7 @@ window.AnimVigenere = {
                 
                 const spanIn = document.createElement("span");
                 spanIn.innerHTML = parsed.char === ' ' ? '&nbsp;' : parsed.char;
+                spanIn.classList.add("char-active");
                 rowIn.appendChild(spanIn);
                 
                 const spanKey = document.createElement("span");
@@ -132,11 +140,15 @@ window.AnimVigenere = {
                 spanKey.style.border = "none";
                 spanKey.style.height = "auto";
                 spanKey.innerText = `-`;
+                spanKey.classList.add("char-active");
                 rowKey.appendChild(spanKey);
 
                 const spanOut = document.createElement("span");
                 spanOut.innerHTML = parsed.char === ' ' ? '&nbsp;' : parsed.char;
+                spanOut.classList.add("char-active");
                 rowOut.appendChild(spanOut);
+
+                activeSpans.push(spanIn, spanOut, spanKey);
 
             } else {
                 card.style.display = "block";
@@ -161,17 +173,32 @@ window.AnimVigenere = {
             });
 
             if (window.getBaseDelay() > 0) {
-                // Micro-animations within card
-                const ops = card.querySelectorAll("div > div");
-                if (ops.length >= 3) {
-                    const middlePnl = Array.from(ops).find(el => el.innerHTML.includes('Poly Shift') || el.innerHTML.includes('Skip'));
-                    const outPnl = Array.from(ops).find(el => el.innerHTML.includes('Output'));
+                const cols = card.children; // the top-level columns
+                if (cols.length >= 3) {
+                    cols[1].style.opacity = "0";
+                    cols[2].style.opacity = "0";
                     
-                    if(middlePnl) { middlePnl.style.opacity = "0"; setTimeout(()=> {middlePnl.style.opacity="1"; middlePnl.style.transition="opacity 0.2s";}, window.getBaseDelay()*0.3); }
-                    if(outPnl) { outPnl.style.opacity = "0"; setTimeout(()=> {outPnl.style.opacity="1"; outPnl.style.transition="opacity 0.3s";}, window.getBaseDelay()*0.6); }
+                    // Show middle operation block
+                    setTimeout(() => { cols[1].style.opacity = "1"; cols[1].style.transition = "opacity 0.2s"; }, window.getBaseDelay() * 0.3);
+                    
+                    if (window.quizEngine && window.quizEngine.enabled && parsed && parsed.type === 'math') {
+                        // Wait a tiny bit for UI update, then trigger quiz
+                        await window.animDelay();
+                        await window.quizEngine.askVigenereQuestion(parsed, card);
+                        // Once answered, reveal the last column
+                        cols[2].style.opacity = "1";
+                        cols[2].style.transition = "opacity 0.3s";
+                    } else {
+                        // Normal play mode
+                        setTimeout(() => { cols[2].style.opacity = "1"; cols[2].style.transition = "opacity 0.3s"; }, window.getBaseDelay() * 0.6);
+                        await window.animDelay();
+                    }
+                } else {
+                    await window.animDelay();
                 }
-                await window.animDelay();
             }
+            
+            activeSpans.forEach(sp => sp.classList.remove("char-active"));
         }
     }
 };

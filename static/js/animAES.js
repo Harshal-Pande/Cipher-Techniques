@@ -38,17 +38,17 @@ window.AnimAES = {
             card.style.padding = "10px";
             card.style.borderLeftColor = "#f59e0b"; // amber color for AES blocks
 
-            let htmlContent = `<span style="color:var(--text-secondary);"><i class="fa-solid fa-cube"></i> ` + steps[i].replace(/^\[\d+\]\s*/, '') + `</span>`;
+            let htmlContent = `<span style="color:var(--text-secondary);"><i class="fa-solid fa-cube fa-spin"></i> ` + steps[i].replace(/^\[\d+\]\s*/, '') + `</span>`;
             
             // Highlight specific AES round operations
             if (steps[i].includes('SubBytes')) {
-                htmlContent = htmlContent.replace('SubBytes', '<strong style="color:#ef4444;">SubBytes</strong>');
+                htmlContent = htmlContent.replace('SubBytes', '<strong style="color:#ef4444; font-size:1.1em;">SubBytes</strong>');
             } else if (steps[i].includes('ShiftRows')) {
-                htmlContent = htmlContent.replace('ShiftRows', '<strong style="color:#3b82f6;">ShiftRows</strong>');
+                htmlContent = htmlContent.replace('ShiftRows', '<strong style="color:#3b82f6; font-size:1.1em;">ShiftRows</strong>');
             } else if (steps[i].includes('MixColumns')) {
-                htmlContent = htmlContent.replace('MixColumns', '<strong style="color:#10b981;">MixColumns</strong>');
+                htmlContent = htmlContent.replace('MixColumns', '<strong style="color:#10b981; font-size:1.1em;">MixColumns</strong>');
             } else if (steps[i].includes('AddRoundKey')) {
-                htmlContent = htmlContent.replace('AddRoundKey', '<strong style="color:#f59e0b;">AddRoundKey</strong>');
+                htmlContent = htmlContent.replace('AddRoundKey', '<strong style="color:#f59e0b; font-size:1.1em;">AddRoundKey</strong>');
             }
 
             card.innerHTML = htmlContent;
@@ -56,7 +56,19 @@ window.AnimAES = {
             stepsOutput.appendChild(card);
             stepsOutput.scrollTop = stepsOutput.scrollHeight;
             
-            if (window.getBaseDelay() > 0) await window.animDelay();
+            Array.from(rowIn.children).forEach(child => child.classList.add("char-active"));
+
+            if (window.getBaseDelay() > 0) {
+                await window.animDelay();
+                if (window.quizEngine && window.quizEngine.enabled) {
+                    if (steps[i].includes('SubBytes')) {
+                        await window.quizEngine.askGenericQuestion('AES Operation', `What does the <strong>SubBytes</strong> step do?`, [{text: 'Applies S-Box substitution', isCorrect: true}, {text: 'Matrix multiplication', isCorrect: false}], card);
+                    } else if (steps[i].includes('ShiftRows')) {
+                        await window.quizEngine.askGenericQuestion('AES Operation', `What does the <strong>ShiftRows</strong> step do?`, [{text: 'Cyclic shift of rows', isCorrect: true}, {text: 'XORs with key', isCorrect: false}], card);
+                    }
+                }
+            }
+            Array.from(rowIn.children).forEach(child => child.classList.remove("char-active"));
         }
 
         // Output hex

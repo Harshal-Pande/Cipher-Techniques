@@ -5,6 +5,28 @@ window.AnimRSA = {
         
         charStrip.innerHTML = '';
         
+        // Output formatting container
+        const rowIn = document.createElement("div");
+        rowIn.className = "row";
+        const arrowDiv = document.createElement("div");
+        arrowDiv.style.fontSize = "24px";
+        arrowDiv.style.color = "var(--border-color)";
+        arrowDiv.innerHTML = '<i class="fa-solid fa-arrow-down"></i>';
+        const rowOut = document.createElement("div");
+        rowOut.className = "row";
+        rowOut.style.marginBottom = "20px";
+        
+        charStrip.appendChild(rowIn);
+        charStrip.appendChild(arrowDiv);
+        charStrip.appendChild(rowOut);
+        
+        for (let i = 0; i < Math.min(input.length, 10); i++) {
+            const spanIn = document.createElement("span");
+            spanIn.innerHTML = input[i] === ' ' ? '&nbsp;' : input[i];
+            rowIn.appendChild(spanIn);
+        }
+        if (input.length > 10) rowIn.innerHTML += "<span>...</span>";
+
         for (let i = 0; i < steps.length; i++) {
             if (!steps[i]) continue;
             
@@ -37,30 +59,18 @@ window.AnimRSA = {
             stepsOutput.appendChild(card);
             stepsOutput.scrollTop = stepsOutput.scrollHeight;
             
-            if (window.getBaseDelay() > 0) await window.animDelay();
+            Array.from(rowIn.children).forEach(child => child.classList.add("char-active"));
+            
+            if (window.getBaseDelay() > 0) {
+                await window.animDelay();
+                if (window.quizEngine && window.quizEngine.enabled && steps[i].includes('Modulus n :')) {
+                    await window.quizEngine.askGenericQuestion('RSA Core Concept', `How is the Modulus (n) calculated from primes p and q?`, [{text: 'n = p × q', isCorrect: true}, {text: 'n = p + q', isCorrect: false}], card);
+                }
+            }
+            Array.from(rowIn.children).forEach(child => child.classList.remove("char-active"));
         }
 
-        // Output formatting
-        const rowIn = document.createElement("div");
-        rowIn.className = "row";
-        const arrowDiv = document.createElement("div");
-        arrowDiv.style.fontSize = "24px";
-        arrowDiv.style.color = "var(--border-color)";
-        arrowDiv.innerHTML = '<i class="fa-solid fa-arrow-down"></i>';
-        const rowOut = document.createElement("div");
-        rowOut.className = "row";
-        rowOut.style.marginBottom = "20px";
-        
-        charStrip.appendChild(rowIn);
-        charStrip.appendChild(arrowDiv);
-        charStrip.appendChild(rowOut);
-        
-        for (let i = 0; i < Math.min(input.length, 10); i++) {
-            const spanIn = document.createElement("span");
-            spanIn.innerHTML = input[i] === ' ' ? '&nbsp;' : input[i];
-            rowIn.appendChild(spanIn);
-        }
-        if (input.length > 10) rowIn.innerHTML += "<span>...</span>";
+        // (Output strip creation was moved to top)
 
         const spanOut = document.createElement("span");
         spanOut.innerHTML = "RSA INT DATA";

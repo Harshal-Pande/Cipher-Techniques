@@ -29,6 +29,24 @@ document.addEventListener('DOMContentLoaded', () => {
         else { speedLabel.innerText = "Instant"; baseDelay = 0; }
     });
 
+    const btnPlay = document.getElementById('btn-play');
+    const btnPause = document.getElementById('btn-pause');
+
+    // Default to interactive learning (pause mode is active)
+    if (window.quizEngine) window.quizEngine.enabled = false;
+
+    btnPlay.addEventListener('click', () => {
+        btnPlay.classList.add('active');
+        btnPause.classList.remove('active');
+        if (window.quizEngine) window.quizEngine.enabled = false;
+    });
+
+    btnPause.addEventListener('click', () => {
+        btnPause.classList.add('active');
+        btnPlay.classList.remove('active');
+        if (window.quizEngine) window.quizEngine.enabled = true;
+    });
+
     // Handle Algorithm Change Logic
     algoSelect.addEventListener('change', (e) => {
         const val = e.target.value;

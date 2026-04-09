@@ -78,6 +78,11 @@
                     <span id="speed-label" style="font-size: 0.8rem; font-weight: bold; color: var(--accent);">1x</span>
                 </div>
 
+                <div class="learning-controls">
+                    <button type="button" class="control-btn active" id="btn-play" title="Auto-play animation"><i class="fa-solid fa-play"></i> Auto-Play</button>
+                    <button type="button" class="control-btn" id="btn-pause" title="Pause at each step to ask quiz"><i class="fa-solid fa-person-chalkboard"></i> Interactive Learning Quiz</button>
+                </div>
+
                 <button type="submit" class="btn" id="run-btn" style="margin-top: 15px;">
                     <i class="fa-solid fa-lock"></i> <span id="btn-text">Execute Encryption</span>
                 </button>
@@ -131,6 +136,7 @@
     </div>
 
     <!-- Scripts -->
+    <script src="{{ url_for('static', filename='js/quizEngine.js') }}"></script>
     <script src="{{ url_for('static', filename='js/animCaesar.js') }}"></script>
     <script src="{{ url_for('static', filename='js/animVigenere.js') }}"></script>
     <script src="{{ url_for('static', filename='js/animAES.js') }}"></script>

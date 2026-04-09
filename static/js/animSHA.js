@@ -5,27 +5,6 @@ window.AnimSHA = {
         
         charStrip.innerHTML = '';
         
-        for (let i = 0; i < steps.length; i++) {
-            if (!steps[i]) continue;
-            
-            const card = document.createElement("div");
-            card.className = "transform-card";
-            card.style.display = "block";
-            card.style.fontSize = "13px";
-            card.style.padding = "10px";
-            card.style.borderLeftColor = "#14b8a6"; // teal for SHA
-
-            let htmlContent = `<span style="color:var(--text-secondary);"><i class="fa-solid fa-hashtag"></i> ` + steps[i].replace(/^\[\d+\]\s*/, '') + `</span>`;
-            
-            card.innerHTML = htmlContent;
-
-            stepsOutput.appendChild(card);
-            stepsOutput.scrollTop = stepsOutput.scrollHeight;
-            
-            if (window.getBaseDelay() > 0) await window.animDelay();
-        }
-
-        // Output formatting
         const rowIn = document.createElement("div");
         rowIn.className = "row";
         const arrowDiv = document.createElement("div");
@@ -46,6 +25,37 @@ window.AnimSHA = {
             rowIn.appendChild(spanIn);
         }
         if (input.length > 10) rowIn.innerHTML += "<span>...</span>";
+
+        for (let i = 0; i < steps.length; i++) {
+            if (!steps[i]) continue;
+            
+            const card = document.createElement("div");
+            card.className = "transform-card";
+            card.style.display = "block";
+            card.style.fontSize = "13px";
+            card.style.padding = "10px";
+            card.style.borderLeftColor = "#14b8a6"; // teal for SHA
+
+            let htmlContent = `<span style="color:var(--text-secondary);"><i class="fa-solid fa-hashtag"></i> ` + steps[i].replace(/^\[\d+\]\s*/, '') + `</span>`;
+            
+            card.innerHTML = htmlContent;
+
+            stepsOutput.appendChild(card);
+            stepsOutput.scrollTop = stepsOutput.scrollHeight;
+            
+            Array.from(rowIn.children).forEach(child => child.classList.add("char-active"));
+            
+            if (window.getBaseDelay() > 0) {
+                await window.animDelay();
+                if (window.quizEngine && window.quizEngine.enabled && i === Math.floor(steps.length / 2)) {
+                    await window.quizEngine.askGenericQuestion('SHA-256 Hashing', `What is a core property of a cryptographic hash like SHA-256?`, [{text: 'It is a one-way function', isCorrect: true}, {text: 'It uses a symmetric key', isCorrect: false}], card);
+                }
+            }
+            Array.from(rowIn.children).forEach(child => child.classList.remove("char-active"));
+        }
+
+        // Output formatting
+        // (Input creation moved top)
 
         const encBytes = data.encrypted.substring(0, 32).match(/.{1,4}/g);
         for (let i = 0; i < Math.min(encBytes.length, 6); i++) {

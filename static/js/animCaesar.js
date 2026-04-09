@@ -53,6 +53,8 @@ window.AnimCaesar = {
             const card = document.createElement("div");
             card.className = "transform-card";
 
+            let activeSpans = [];
+
             if (parsed && parsed.type === 'math') {
                 // Highly detailed math animations
                 card.innerHTML = `
@@ -78,11 +80,15 @@ window.AnimCaesar = {
                 // Add to char strip dynamically
                 const spanIn = document.createElement("span");
                 spanIn.innerHTML = parsed.from === ' ' ? '&nbsp;' : parsed.from;
+                spanIn.classList.add("char-active");
                 rowIn.appendChild(spanIn);
                 
                 const spanOut = document.createElement("span");
                 spanOut.innerHTML = parsed.to === ' ' ? '&nbsp;' : parsed.to;
+                spanOut.classList.add("char-active");
                 rowOut.appendChild(spanOut);
+
+                activeSpans.push(spanIn, spanOut);
                 
             } else if (parsed && parsed.type === 'keep') {
                 card.innerHTML = `
@@ -93,11 +99,16 @@ window.AnimCaesar = {
                 
                 const spanIn = document.createElement("span");
                 spanIn.innerHTML = parsed.char === ' ' ? '&nbsp;' : parsed.char;
+                spanIn.classList.add("char-active");
                 rowIn.appendChild(spanIn);
                 
                 const spanOut = document.createElement("span");
                 spanOut.innerHTML = parsed.char === ' ' ? '&nbsp;' : parsed.char;
+                spanOut.classList.add("char-active");
                 rowOut.appendChild(spanOut);
+
+                activeSpans.push(spanIn, spanOut);
+
 
             } else {
                 card.style.display = "block";
@@ -123,16 +134,33 @@ window.AnimCaesar = {
             });
             
             if (window.getBaseDelay() > 0) {
-                // To show proper numbering additions, add a micro-delay inside the card before showing the result
-                const ops = card.querySelectorAll("div > div");
-                if (ops.length >= 3) {
-                    ops[1].style.opacity = "0";
-                    ops[2].parentElement.style.opacity = "0";
-                    setTimeout(() => { ops[1].style.opacity = "1"; ops[1].style.transition = "opacity 0.2s"; }, window.getBaseDelay() * 0.3);
-                    setTimeout(() => { ops[2].parentElement.style.opacity = "1"; ops[2].parentElement.style.transition = "opacity 0.3s"; }, window.getBaseDelay() * 0.6);
+                const cols = card.children; // the top-level columns
+                if (cols.length >= 3) {
+                    cols[1].style.opacity = "0";
+                    cols[2].style.opacity = "0";
+                    
+                    // Show middle operation block
+                    setTimeout(() => { cols[1].style.opacity = "1"; cols[1].style.transition = "opacity 0.2s"; }, window.getBaseDelay() * 0.3);
+                    
+                    if (window.quizEngine && window.quizEngine.enabled && parsed && parsed.type === 'math') {
+                        // Wait a tiny bit for UI update, then trigger quiz
+                        await window.animDelay();
+                        await window.quizEngine.askCaesarQuestion(parsed, card);
+                        // Once answered, reveal the last column
+                        cols[2].style.opacity = "1";
+                        cols[2].style.transition = "opacity 0.3s";
+                    } else {
+                        // Normal play mode
+                        setTimeout(() => { cols[2].style.opacity = "1"; cols[2].style.transition = "opacity 0.3s"; }, window.getBaseDelay() * 0.6);
+                        await window.animDelay();
+                    }
+                } else {
+                    await window.animDelay();
                 }
-                await window.animDelay();
             }
+            
+            // Remove highlighting
+            activeSpans.forEach(sp => sp.classList.remove("char-active"));
         }
     }
 };
