@@ -125,23 +125,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function setTechniqueInfo(algo) {
         if (!techInfo) return;
-
-        const info = TECHNIQUE_DICT[algo];
-        if (!info) {
-            techInfo.classList.remove('show');
-            techInfo.innerHTML = '';
-            return;
-        }
-
-        techInfo.classList.add('show');
-        const bulletsHtml = info.bullets.map((b) => `<li>${escapeHtml(b)}</li>`).join('');
-        techInfo.innerHTML = `
-            <h3><i class="fa-solid fa-circle-info"></i> ${escapeHtml(info.title)}</h3>
-            <p class="tech-lead">${escapeHtml(info.lead)}</p>
-            <ul class="tech-bullets">${bulletsHtml}</ul>
-            <p class="tech-detail">${escapeHtml(info.detail)}</p>
-            <div class="example"><strong>Example:</strong> ${escapeHtml(info.example)}</div>
-        `;
+        techInfo.classList.remove('show');
+        techInfo.innerHTML = '';
+        techInfo.dataset.selectedAlgo = algo || '';
+        /* Full text lives in TECHNIQUE_DICT — use "Description" button for the modal only (saves canvas height). */
     }
 
     function buildDescModalHtml(info) {

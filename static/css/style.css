@@ -79,9 +79,11 @@ header p.subtitle {
 .container {
     display: grid;
     grid-template-columns: 350px 1fr;
+    grid-template-rows: 1fr;
     gap: 1.5rem;
     padding: 1.5rem;
     flex: 1;
+    min-height: 0;
     overflow: hidden; /* Keep grid contained */
 }
 
@@ -101,6 +103,9 @@ header p.subtitle {
 .panel.panel-canvas {
     padding-top: 1.5rem;
     overflow: hidden;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
     background: radial-gradient(circle at center, rgba(30, 41, 59, 0.5), var(--panel-bg));
 }
 
@@ -222,14 +227,21 @@ header p.subtitle {
 
 .hero-visuals {
     display: flex;
-    align-items: center;
+    align-items: stretch;
     justify-content: center;
-    margin-bottom: 1rem;
-    min-height: 62vh;
+    margin-bottom: 0.75rem;
+    flex: 1 1 auto;
+    min-height: clamp(360px, 64vh, 920px);
     border: 1px dashed rgba(255,255,255,0.08);
     border-radius: 12px;
     background: rgba(0,0,0,0.15);
-    overflow: hidden;
+    overflow-x: hidden;
+    overflow-y: auto;
+}
+
+/* AES lab is tall — give it extra room when active */
+#aes-visuals.hero-visuals {
+    min-height: clamp(420px, 70vh, 1000px);
 }
 
 .steps-panel {
@@ -283,7 +295,7 @@ header p.subtitle {
 .steps-log-body {
     margin: 0;
     padding: 10px 12px 12px;
-    max-height: min(42vh, 520px);
+    max-height: min(26vh, 380px);
     overflow: auto;
     font-size: 0.8rem;
     line-height: 1.5;
@@ -362,6 +374,11 @@ header p.subtitle {
 }
 
 .canvas-full {
+    display: flex;
+    flex-direction: column;
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow-x: hidden;
     overflow-y: auto;
     padding-right: 6px;
 }
@@ -397,6 +414,16 @@ header p.subtitle {
     min-height: 0;
 }
 
+/* Inline technique blurb removed from canvas — use "Description" for modal (frees space for animation). */
+#tech-info.tech-info {
+    display: none !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    height: 0 !important;
+    overflow: hidden !important;
+    visibility: hidden;
+    pointer-events: none;
+}
 .tech-info {
     display: none;
     margin-bottom: 1rem;
@@ -405,7 +432,7 @@ header p.subtitle {
     border: 1px solid rgba(255,255,255,0.08);
     background: rgba(0,0,0,0.18);
 }
-.tech-info.show { display: block; }
+.tech-info.show { display: none; }
 .tech-info h3 {
     margin: 0 0 6px 0;
     font-size: 0.95rem;
@@ -1000,10 +1027,12 @@ input:focus, select:focus, textarea:focus {
 }
 .aes-lab {
     width: 100%;
+    min-height: min-content;
+    flex: 1 1 auto;
     display: flex;
     flex-direction: column;
     gap: 12px;
-    padding: 4px 0;
+    padding: 8px 4px 12px;
 }
 .aes-top {
     display: flex;

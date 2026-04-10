@@ -121,7 +121,7 @@
             <div class="canvas-head">
                 <h2 style="margin-bottom: 0;"><i class="fa-solid fa-eye"></i> Operations Canvas</h2>
                 <div class="canvas-actions">
-                    <button type="button" class="chip-btn" id="btn-toggle-desc"><i class="fa-solid fa-circle-info"></i> Description</button>
+                    <button type="button" class="chip-btn" id="btn-toggle-desc" title="Open full technique description (not shown on canvas)"><i class="fa-solid fa-circle-info"></i> Description</button>
                     <button type="button" class="chip-btn" id="btn-toggle-steps-header" title="Open steps in a large window"><i class="fa-solid fa-list"></i> Steps</button>
                 </div>
             </div>
@@ -137,7 +137,7 @@
                 <div id="sha256-visuals" class="hero-visuals" style="display:none;"></div>
 
                 <!-- Technique info + solved example -->
-                <section id="tech-info" class="tech-info" aria-live="polite"></section>
+                <section id="tech-info" class="tech-info" aria-hidden="true" hidden></section>
 
                 <!-- Step log with toolbar -->
                 <div id="steps-panel" class="steps-panel is-empty">
