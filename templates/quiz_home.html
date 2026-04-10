@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CryptoLab | Quiz Module</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800;900&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body class="home-body">
+    <div class="home-bg"></div>
+
+    <header class="home-header">
+        <div class="home-brand">
+            <div class="home-badge"><i class="fa-solid fa-graduation-cap"></i></div>
+            <div>
+                <div class="home-title">Quiz Module</div>
+                <div class="home-subtitle mono">Choose a technique, then choose a level</div>
+            </div>
+        </div>
+        <div class="home-cta">
+            <a class="btn btn-inline btn-ghost" href="{{ url_for('index') }}"><i class="fa-solid fa-house"></i> Home</a>
+            <a class="btn btn-inline" href="{{ url_for('simulator') }}"><i class="fa-solid fa-flask"></i> Playground</a>
+        </div>
+    </header>
+
+    <main class="home-main">
+        <section class="home-section">
+            <div class="section-head">
+                <h2><i class="fa-solid fa-layer-group"></i> Techniques</h2>
+                <p>Each technique has 3 levels: <strong>10 Easy</strong> + <strong>10 Medium</strong> + <strong>10 Hard</strong> (30 total).</p>
+            </div>
+
+            <div class="card-grid">
+                <article class="tech-card">
+                    <div class="tech-icon caesar"><i class="fa-solid fa-rotate"></i></div>
+                    <h3>Caesar Cipher</h3>
+                    <p>Indexing + shifts + modulo wrap-around.</p>
+                    <div class="card-actions">
+                        <a class="btn btn-inline" href="{{ url_for('quiz_levels', technique='caesar') }}">Choose level</a>
+                    </div>
+                </article>
+
+                <article class="tech-card">
+                    <div class="tech-icon aes"><i class="fa-solid fa-cubes"></i></div>
+                    <h3>AES-256 (CBC)</h3>
+                    <p>Blocks, padding, IV, and round concepts.</p>
+                    <div class="card-actions">
+                        <a class="btn btn-inline" href="{{ url_for('quiz_levels', technique='aes') }}">Choose level</a>
+                    </div>
+                </article>
+
+                <article class="tech-card">
+                    <div class="tech-icon quiz"><i class="fa-solid fa-table-cells"></i></div>
+                    <h3>Vigenère Cipher</h3>
+                    <p>Repeating key shifts and decoding.</p>
+                    <div class="card-actions">
+                        <a class="btn btn-inline" href="{{ url_for('quiz_levels', technique='vigenere') }}">Choose level</a>
+                    </div>
+                </article>
+
+                <article class="tech-card">
+                    <div class="tech-icon quiz"><i class="fa-solid fa-key"></i></div>
+                    <h3>RSA-2048</h3>
+                    <p>Key generation concepts and public/private key use.</p>
+                    <div class="card-actions">
+                        <a class="btn btn-inline" href="{{ url_for('quiz_levels', technique='rsa') }}">Choose level</a>
+                    </div>
+                </article>
+
+                <article class="tech-card">
+                    <div class="tech-icon quiz"><i class="fa-solid fa-hashtag"></i></div>
+                    <h3>SHA-256</h3>
+                    <p>One-way hashing and avalanche effect.</p>
+                    <div class="card-actions">
+                        <a class="btn btn-inline" href="{{ url_for('quiz_levels', technique='sha256') }}">Choose level</a>
+                    </div>
+                </article>
+            </div>
+        </section>
+    </main>
+</body>
+</html>
+

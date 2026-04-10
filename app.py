@@ -70,6 +70,22 @@ def perform_encryption(algo, text, key):
 def index():
     return render_template('index.html')
 
+@app.route('/simulator')
+def simulator():
+    return render_template('simulator.html')
+
+@app.route('/quiz')
+def quiz_home():
+    return render_template('quiz_home.html')
+
+@app.route('/quiz/<technique>')
+def quiz_levels(technique: str):
+    return render_template('quiz_levels.html', technique=technique)
+
+@app.route('/quiz/<technique>/<level>')
+def quiz_run(technique: str, level: str):
+    return render_template('quiz_run.html', technique=technique, level=level)
+
 @app.route('/process', methods=['POST'])
 def process():
     try:

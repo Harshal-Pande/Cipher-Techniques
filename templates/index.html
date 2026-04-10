@@ -3,145 +3,130 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Network Encryption Simulator</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <title>CryptoLab | Home</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
-    <style>
-        .speed-control {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            margin-top: 15px;
-            background: rgba(0,0,0,0.2);
-            padding: 10px;
-            border-radius: 6px;
-            border: 1px solid var(--border-color);
-        }
-        .canvas-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 20px;
-            height: 100%;
-        }
-        .canvas-full {
-            display: flex;
-            flex-direction: column;
-            width: 100%;
-            height: 100%;
-            overflow-y: auto;
-        }
-    </style>
 </head>
-<body>
+<body class="home-body">
+    <div class="home-bg"></div>
 
-    <header>
-        <div class="logo">
-            <i class="fa-solid fa-shield-halved logo-icon"></i>
-            <h1>Network Encryption Simulator</h1>
+    <header class="home-header">
+        <div class="home-brand">
+            <div class="home-badge"><i class="fa-solid fa-shield-halved"></i></div>
+            <div>
+                <div class="home-title">CryptoLab</div>
+                <div class="home-subtitle mono">Animations + quizzes for core cryptography techniques</div>
+            </div>
         </div>
-        <p class="subtitle">Computer Networks Project Simulation</p>
+        <div class="home-cta">
+            <a class="btn btn-inline" href="{{ url_for('simulator') }}"><i class="fa-solid fa-flask"></i> Open Simulator</a>
+        </div>
     </header>
 
-    <div class="container">
-        
-        <!-- LEFT PANEL: Inputs & Outputs -->
-        <div class="panel">
-            <h2><i class="fa-solid fa-terminal"></i> Configuration</h2>
-            
-            <form id="sim-form">
-                <div class="form-group">
-                    <label for="algorithm"><i class="fa-solid fa-microchip"></i> Select Algorithm</label>
-                    <select id="algorithm" required>
-                        <option value="" disabled selected>-- Choose --</option>
-                        <option value="caesar">Caesar Cipher (Substitution)</option>
-                        <option value="vigenere">Vigenère Cipher (Polyalphabetic)</option>
-                        <option value="aes">AES-256 (Symmetric Block)</option>
-                        <option value="rsa">RSA-2048 (Asymmetric Public Key)</option>
-                        <option value="sha256">SHA-256 (Cryptographic Hash)</option>
-                    </select>
-                </div>
-
-                <div class="form-group">
-                    <label for="plaintext"><i class="fa-regular fa-file-lines"></i> Input Message</label>
-                    <textarea id="plaintext" placeholder="Type the message to send..." required></textarea>
-                </div>
-
-                <div class="form-group hidden" id="key-group">
-                    <label for="key" id="key-label"><i class="fa-solid fa-key"></i> Key</label>
-                    <input type="text" id="key" placeholder="Enter key...">
-                </div>
-
-                <div class="speed-control">
-                    <label style="margin:0;"><i class="fa-solid fa-gauge-high"></i> Speed:</label>
-                    <input type="range" id="anim-speed" min="1" max="4" value="1" step="1" title="Animation Speed">
-                    <span id="speed-label" style="font-size: 0.8rem; font-weight: bold; color: var(--accent);">1x</span>
-                </div>
-
-                <div class="learning-controls">
-                    <button type="button" class="control-btn active" id="btn-play" title="Auto-play animation"><i class="fa-solid fa-play"></i> Auto-Play</button>
-                    <button type="button" class="control-btn" id="btn-pause" title="Pause at each step to ask quiz"><i class="fa-solid fa-person-chalkboard"></i> Interactive Learning Quiz</button>
-                </div>
-
-                <button type="submit" class="btn" id="run-btn" style="margin-top: 15px;">
-                    <i class="fa-solid fa-lock"></i> <span id="btn-text">Execute Encryption</span>
-                </button>
-            </form>
-
-            <h2 style="margin-top: 2rem;"><i class="fa-solid fa-box-open"></i> Results</h2>
-            
-            <div class="form-group">
-                <label>Encrypted / Hashed Form (Transit Data)</label>
-                <textarea id="encrypted-output" class="readonly-field" readonly placeholder="Calculated output will appear here..."></textarea>
+    <main class="home-main">
+        <section class="home-hero">
+            <div class="hero-copy">
+                <h1>Learn encryption by watching it happen.</h1>
+                <p>
+                    Pick a technique, run <strong>Encrypt</strong> step-by-step, then run <strong>Decrypt</strong> as a separate sequence.
+                    Use the dedicated <strong>Quiz Module</strong> to test easy/medium/hard levels.
+                </p>
+            <div class="hero-actions">
+                <a class="btn btn-inline" href="{{ url_for('simulator') }}"><i class="fa-solid fa-flask"></i> Open Playground</a>
+            </div>
             </div>
 
-            <div class="form-group hidden" id="decrypt-group">
-                <label>Decryption Sequence</label>
-                <button type="button" class="btn" id="run-decrypt-btn" style="margin-bottom: 10px; background-color: var(--success);">
-                    <i class="fa-solid fa-unlock-keyhole"></i> <span>Execute Decryption Process</span>
-                </button>
-                <textarea id="decrypted-output" class="readonly-field" readonly placeholder="Recovered text will appear here..."></textarea>
-            </div>
-        </div>
-
-        <!-- RIGHT PANEL: Visualization Canvas -->
-        <div class="panel" style="padding-top: 1.5rem; overflow: hidden; background: radial-gradient(circle at center, rgba(30, 41, 59, 0.5), var(--panel-bg));">
-            <h2 style="margin-bottom: 2rem;"><i class="fa-solid fa-eye"></i> Operations Canvas</h2>
-            
-            <div id="algo-canvas" class="canvas-full">
-                <div id="flow-bar" class="flow-bar" style="text-align: center; font-size: 1.5rem; font-weight: bold; margin-bottom: 1.5rem; color: var(--accent); opacity: 0; transition: opacity 0.5s;"></div>
-
-                <!-- Custom Algorithm Visualization Containers -->
-                <div id="caesar-visuals" style="display: none; align-items: center; justify-content: center; margin-bottom: 2rem; min-height: 100px;"></div>
-                <div id="vigenere-visuals" style="display: none; align-items: center; justify-content: center; margin-bottom: 2rem; min-height: 100px;"></div>
-                <div id="aes-visuals" style="display: none; margin-bottom: 2rem; min-height: 100px;"></div>
-                <div id="rsa-visuals" style="display: none; margin-bottom: 2rem; min-height: 100px;"></div>
-                
-                <div class="canvas-grid" id="standard-canvas">
-                    <!-- Left Column of Canvas: Step Cards -->
-                    <div id="steps-output" class="steps-container" style="overflow-y: auto; max-height: 500px; padding-right: 15px;"></div>
-                    
-                    <!-- Right Column of Canvas: Strip -->
-                    <div id="char-strip-container" style="display: flex; flex-direction: column; align-items: center; justify-content: flex-start; overflow-x: auto; padding-top: 1rem;">
-                        <div id="char-strip" class="char-strip" style="display: flex; flex-direction: column; gap: 1rem; align-items: center;"></div>
+            <div class="hero-preview">
+                <div class="preview-card">
+                    <div class="preview-top">
+                        <span class="pill"><i class="fa-solid fa-lock"></i> Encrypt</span>
+                        <span class="pill pill2"><i class="fa-solid fa-unlock-keyhole"></i> Decrypt</span>
+                    </div>
+                    <div class="preview-body mono">
+                        <div class="preview-line">HELLO → KHOOR</div>
+                        <div class="preview-mini">Step 1: map index</div>
+                        <div class="preview-mini">Step 2: shift + mod 26</div>
                     </div>
                 </div>
-
-                <div id="crypto-status" style="margin-top: auto; padding: 1rem 2rem; background: rgba(0,0,0,0.2); border: 1px dashed var(--border-color); border-radius: 8px; color: var(--text-secondary); text-align: center; flex-shrink: 0;">
-                    Awaiting configuration...
-                </div>
             </div>
-        </div>
+        </section>
 
-    </div>
+        <section class="home-section">
+            <div class="section-head">
+                <h2><i class="fa-solid fa-film"></i> Animations</h2>
+                <p>Pick a technique. Run encrypt and decrypt as separate flows with clear visuals and step transcript.</p>
+            </div>
 
-    <!-- Scripts -->
-    <script src="{{ url_for('static', filename='js/quizEngine.js') }}"></script>
-    <script src="{{ url_for('static', filename='js/animCaesar.js') }}"></script>
-    <script src="{{ url_for('static', filename='js/animVigenere.js') }}"></script>
-    <script src="{{ url_for('static', filename='js/animAES.js') }}"></script>
-    <script src="{{ url_for('static', filename='js/animRSA.js') }}"></script>
-    <script src="{{ url_for('static', filename='js/animSHA.js') }}"></script>
-    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+            <div class="card-grid">
+                <article class="tech-card">
+                    <div class="tech-icon caesar"><i class="fa-solid fa-rotate"></i></div>
+                    <h3>Caesar Cipher</h3>
+                    <p>Substitution cipher using a shift \(N\). Learn indexing + modulo wrap-around.</p>
+                    <div class="card-actions">
+                        <a class="btn btn-inline" href="{{ url_for('simulator') }}?algo=caesar&mode=anim">Open Playground</a>
+                    </div>
+                </article>
+
+                <article class="tech-card">
+                    <div class="tech-icon aes"><i class="fa-solid fa-cubes"></i></div>
+                    <h3>AES (Block Cipher)</h3>
+                    <p>Symmetric encryption with rounds (SubBytes, ShiftRows, MixColumns, AddRoundKey).</p>
+                    <div class="card-actions">
+                        <a class="btn btn-inline" href="{{ url_for('simulator') }}?algo=aes&mode=anim">Open Playground</a>
+                    </div>
+                </article>
+
+                <article class="tech-card">
+                    <div class="tech-icon quiz"><i class="fa-solid fa-table-cells"></i></div>
+                    <h3>Vigenère Cipher</h3>
+                    <p>Polyalphabetic cipher using a repeating key to change the shift per character.</p>
+                    <div class="card-actions">
+                        <a class="btn btn-inline" href="{{ url_for('simulator') }}?algo=vigenere&mode=anim">Open Playground</a>
+                    </div>
+                </article>
+
+                <article class="tech-card">
+                    <div class="tech-icon quiz"><i class="fa-solid fa-key"></i></div>
+                    <h3>RSA (Public Key)</h3>
+                    <p>Asymmetric encryption showing prime generation, modulus, and key concepts.</p>
+                    <div class="card-actions">
+                        <a class="btn btn-inline" href="{{ url_for('simulator') }}?algo=rsa&mode=anim">Open Playground</a>
+                    </div>
+                </article>
+
+                <article class="tech-card">
+                    <div class="tech-icon quiz"><i class="fa-solid fa-hashtag"></i></div>
+                    <h3>SHA-256 (Hash)</h3>
+                    <p>One-way hashing that produces a fixed-size digest (no decryption step).</p>
+                    <div class="card-actions">
+                        <a class="btn btn-inline" href="{{ url_for('simulator') }}?algo=sha256&mode=anim">Open Playground</a>
+                    </div>
+                </article>
+            </div>
+        </section>
+
+        <section class="home-section">
+            <div class="section-head">
+                <h2><i class="fa-solid fa-brain"></i> Quizzes</h2>
+                <p>Separate quiz pages with levels, timer, scoring, and high score tracking.</p>
+            </div>
+
+            <div class="card-grid">
+                <article class="tech-card">
+                    <div class="tech-icon quiz"><i class="fa-solid fa-graduation-cap"></i></div>
+                    <h3>Quiz Module</h3>
+                    <p>Pick a technique → choose Easy/Medium/Hard → take 10 timed questions per level.</p>
+                    <div class="card-actions">
+                        <a class="btn btn-inline" href="{{ url_for('quiz_home') }}">Open Quiz Module</a>
+                    </div>
+                </article>
+            </div>
+        </section>
+
+        <footer class="home-footer mono">
+            Tip: use <strong>Encrypt</strong> first, then click <strong>Execute Decryption Process</strong> to run the second sequence.
+        </footer>
+    </main>
 </body>
 </html>

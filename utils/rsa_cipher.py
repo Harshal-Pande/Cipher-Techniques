@@ -52,10 +52,17 @@ def rsa_encrypt(plaintext: str) -> dict:
     public_key = private_key.public_key()
 
     pub_numbers = public_key.public_key().public_numbers() if hasattr(public_key, 'public_key') else public_key.public_numbers()
+    priv_numbers = private_key.private_numbers()
+    p_val = priv_numbers.p
+    q_val = priv_numbers.q
+    d_val = priv_numbers.d
     steps.append("")
     steps.append(f"   ✅ Key Pair Generated (RSA-2048)")
+    steps.append(f"   Prime p : {p_val}")
+    steps.append(f"   Prime q : {q_val}")
     steps.append(f"   Public Exponent (e) : {pub_numbers.e}")
-    steps.append(f"   Modulus (n) first 64 bits: {hex(pub_numbers.n)[:18]}...")
+    steps.append(f"   Modulus n : {pub_numbers.n}")
+    steps.append(f"   Private Exponent d : {d_val}")
 
     # Step 2: Encryption
     steps.append("─" * 50)
@@ -86,7 +93,7 @@ def rsa_encrypt(plaintext: str) -> dict:
         encryption_algorithm=serialization.NoEncryption()
     ).decode('utf-8')
 
-    steps.append(f"   ✅ Ciphertext (Base64, first 40 chars): {encrypted_b64[:40]}...")
+    steps.append(f"   ✅ Ciphertext (Base64): {encrypted_b64}")
     steps.append("─" * 50)
     steps.append("📡 RSA is used in TLS Handshake to exchange the symmetric session key.")
     steps.append("✅ RSA Encryption Complete")

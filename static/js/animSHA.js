@@ -1,74 +1,54 @@
 window.AnimSHA = {
+    ensureVisuals: function() {
+        const host = document.getElementById('sha256-visuals');
+        if (!host) return null;
+        host.style.display = 'flex';
+        host.innerHTML = `
+            <div class="sha-stage">
+                <div class="sha-hud">
+                    <div class="sha-title mono"><i class="fa-solid fa-hashtag"></i> SHA-256 HASH FORGE</div>
+                    <div class="sha-phase mono" id="sha-phase">Step 1: compress → Step 2: emit digest</div>
+                </div>
+                <div class="sha-digest mono" id="sha-digest"></div>
+            </div>
+        `;
+        return host;
+    },
+
     execute: async function(input, data, stepsOutput, charStrip) {
         const steps = data.steps;
         if (!steps || steps.length === 0) return;
-        
-        charStrip.innerHTML = '';
-        
-        const rowIn = document.createElement("div");
-        rowIn.className = "row";
-        const arrowDiv = document.createElement("div");
-        arrowDiv.style.fontSize = "24px";
-        arrowDiv.style.color = "var(--border-color)";
-        arrowDiv.innerHTML = '<i class="fa-solid fa-arrow-down"></i>';
-        const rowOut = document.createElement("div");
-        rowOut.className = "row";
-        rowOut.style.marginBottom = "20px";
-        
-        charStrip.appendChild(rowIn);
-        charStrip.appendChild(arrowDiv);
-        charStrip.appendChild(rowOut);
-        
-        for (let i = 0; i < Math.min(input.length, 10); i++) {
-            const spanIn = document.createElement("span");
-            spanIn.innerHTML = input[i] === ' ' ? '&nbsp;' : input[i];
-            rowIn.appendChild(spanIn);
+
+        this.ensureVisuals();
+        if (charStrip) charStrip.innerHTML = '';
+
+        // Dynamic: show avalanche effect numbers + digest chips (no list)
+        const phase = document.getElementById('sha-phase');
+        if (phase) phase.innerText = 'Step 1: compress input → Step 2: emit digest';
+
+        let diff = null;
+        for (const s of steps) {
+            const m = s && s.toString().match(/Hex difference:\s*~(\d+)/i);
+            if (m) { diff = parseInt(m[1], 10); break; }
         }
-        if (input.length > 10) rowIn.innerHTML += "<span>...</span>";
+        if (diff !== null && phase) phase.innerText = `Avalanche: ~${diff}/64 hex chars changed`;
 
-        for (let i = 0; i < steps.length; i++) {
-            if (!steps[i]) continue;
-            
-            const card = document.createElement("div");
-            card.className = "transform-card";
-            card.style.display = "block";
-            card.style.fontSize = "13px";
-            card.style.padding = "10px";
-            card.style.borderLeftColor = "#14b8a6"; // teal for SHA
-
-            let htmlContent = `<span style="color:var(--text-secondary);"><i class="fa-solid fa-hashtag"></i> ` + steps[i].replace(/^\[\d+\]\s*/, '') + `</span>`;
-            
-            card.innerHTML = htmlContent;
-
-            stepsOutput.appendChild(card);
-            stepsOutput.scrollTop = stepsOutput.scrollHeight;
-            
-            Array.from(rowIn.children).forEach(child => child.classList.add("char-active"));
-            
-            if (window.getBaseDelay() > 0) {
-                await window.animDelay();
-                if (window.quizEngine && window.quizEngine.enabled && i === Math.floor(steps.length / 2)) {
-                    await window.quizEngine.askGenericQuestion('SHA-256 Hashing', `What is a core property of a cryptographic hash like SHA-256?`, [{text: 'It is a one-way function', isCorrect: true}, {text: 'It uses a symmetric key', isCorrect: false}], card);
-                }
-            }
-            Array.from(rowIn.children).forEach(child => child.classList.remove("char-active"));
+        const digest = document.getElementById('sha-digest');
+        if (phase) phase.innerText = (diff !== null) ? `Step 2: digest preview + avalanche (~${diff}/64)` : 'Step 2: Emit digest (hex preview)';
+        if (digest && data.encrypted) {
+            const chunks = data.encrypted.replace(/[^0-9a-fA-F]/g, '').substring(0, 48).match(/.{1,4}/g) || [];
+            digest.innerHTML = chunks.slice(0, 10).map(c => `<span class="sha-chip">${c.toLowerCase()}</span>`).join('') + (chunks.length > 10 ? `<span class="sha-chip sha-chip-ghost">…</span>` : '');
+            if (window.gsap) gsap.fromTo('.sha-chip', { y: 8, opacity: 0 }, { y: 0, opacity: 1, duration: 0.25, stagger: 0.03 });
         }
 
-        // Output formatting
-        // (Input creation moved top)
-
-        const encBytes = data.encrypted.substring(0, 32).match(/.{1,4}/g);
-        for (let i = 0; i < Math.min(encBytes.length, 6); i++) {
-            const spanOut = document.createElement("span");
-            spanOut.innerHTML = encBytes[i];
-            spanOut.style.fontSize = "0.7rem";
-            spanOut.style.width = "auto";
-            spanOut.style.padding = "0 8px";
-            spanOut.style.borderColor = "#14b8a6";
-            spanOut.style.color = "#14b8a6";
-            spanOut.style.backgroundColor = "rgba(20, 184, 166, 0.2)";
-            rowOut.appendChild(spanOut);
+        if (window.quizEngine && window.quizEngine.enabled) {
+            await window.animDelay();
+            await window.quizEngine.askGenericQuestion(
+                'SHA-256 Hashing',
+                `Which statement is true about SHA-256?`,
+                [{ text: 'It is one-way (not decryptable)', isCorrect: true }, { text: 'It uses a secret key like AES', isCorrect: false }],
+                digest
+            );
         }
-        rowOut.innerHTML += '<span style="border:none;background:transparent;width:auto;">...</span>';
     }
 };

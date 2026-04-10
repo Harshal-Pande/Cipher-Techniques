@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CryptoLab | Quiz</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800;900&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <meta name="quiz-technique" content="{{ technique }}">
+    <meta name="quiz-level" content="{{ level }}">
+</head>
+<body>
+    <header class="home-header">
+        <div class="home-brand">
+            <div class="home-badge"><i class="fa-solid fa-stopwatch"></i></div>
+            <div>
+                <div class="home-title">Quiz</div>
+                <div class="home-subtitle mono">{{ technique|upper }} • {{ level|upper }}</div>
+            </div>
+        </div>
+        <div class="home-cta">
+            <a class="btn btn-inline btn-ghost" href="{{ url_for('quiz_levels', technique=technique) }}"><i class="fa-solid fa-arrow-left"></i> Levels</a>
+            <a class="btn btn-inline" href="{{ url_for('simulator') }}?algo={{ technique }}&mode=anim"><i class="fa-solid fa-flask"></i> Playground</a>
+        </div>
+    </header>
+
+    <main class="quiz-page">
+        <section class="quiz-card">
+            <div class="quiz-top">
+                <div class="quiz-meta mono">
+                    <span id="q-progress">Q 1/10</span>
+                    <span class="dot">•</span>
+                    <span id="q-level">{{ level|upper }}</span>
+                </div>
+                <div class="quiz-stats mono">
+                    <span>Time: <strong id="q-time">--</strong>s</span>
+                    <span class="dot">•</span>
+                    <span>Score: <strong id="q-score">0</strong></span>
+                    <span class="dot">•</span>
+                    <span>High: <strong id="q-high">0</strong></span>
+                </div>
+            </div>
+
+            <h2 id="q-title" class="quiz-question">Loading…</h2>
+            <p id="q-sub" class="quiz-sub mono"></p>
+
+            <div id="q-options" class="quiz-options-grid"></div>
+
+            <div class="quiz-bottom">
+                <div id="q-feedback" class="quiz-feedback-line mono"></div>
+                <button id="btn-next" class="btn btn-inline" disabled><i class="fa-solid fa-arrow-right"></i> Next</button>
+            </div>
+        </section>
+    </main>
+
+    <script src="{{ url_for('static', filename='js/questions.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/quizApp.js') }}"></script>
+</body>
+</html>
+

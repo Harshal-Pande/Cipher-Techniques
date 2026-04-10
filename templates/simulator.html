@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Network Encryption Simulator</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <style>
+        .speed-control {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-top: 15px;
+            background: rgba(0,0,0,0.2);
+            padding: 10px;
+            border-radius: 6px;
+            border: 1px solid var(--border-color);
+        }
+        .canvas-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            height: 100%;
+            min-height: 0;
+        }
+        .canvas-full {
+            display: flex;
+            flex-direction: column;
+            width: 100%;
+            height: 100%;
+            min-height: 0;
+            overflow: hidden;
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="logo">
+            <i class="fa-solid fa-shield-halved logo-icon"></i>
+            <h1>Network Encryption Simulator</h1>
+        </div>
+        <p class="subtitle">
+            <a class="header-link" href="{{ url_for('index') }}"><i class="fa-solid fa-house"></i> Home</a>
+            <span class="header-sep">|</span>
+            Computer Networks Project Simulation
+        </p>
+    </header>
+
+    <div class="container">
+        <!-- LEFT PANEL: Inputs & Outputs -->
+        <div class="panel">
+            <h2><i class="fa-solid fa-terminal"></i> Configuration</h2>
+
+            <form id="sim-form">
+                <div class="form-group">
+                    <label for="algorithm"><i class="fa-solid fa-microchip"></i> Select Algorithm</label>
+                    <select id="algorithm" required>
+                        <option value="" disabled selected>-- Choose --</option>
+                        <option value="caesar">Caesar Cipher (Substitution)</option>
+                        <option value="vigenere">Vigenère Cipher (Polyalphabetic)</option>
+                        <option value="aes">AES-256 (Symmetric Block)</option>
+                        <option value="rsa">RSA-2048 (Asymmetric Public Key)</option>
+                        <option value="sha256">SHA-256 (Cryptographic Hash)</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="plaintext"><i class="fa-regular fa-file-lines"></i> Input Message</label>
+                    <textarea id="plaintext" placeholder="Type the message to send..." required></textarea>
+                </div>
+
+                <div class="form-group hidden" id="key-group">
+                    <label for="key" id="key-label"><i class="fa-solid fa-key"></i> Key</label>
+                    <input type="text" id="key" placeholder="Enter key...">
+                </div>
+
+                <div class="speed-control">
+                    <label style="margin:0;"><i class="fa-solid fa-gauge-high"></i> Speed:</label>
+                    <input type="range" id="anim-speed" min="1" max="4" value="1" step="1" title="Animation Speed">
+                    <span id="speed-label" style="font-size: 0.8rem; font-weight: bold; color: var(--accent);">1x</span>
+                </div>
+
+                <div class="learning-controls">
+                    <button type="button" class="control-btn active" id="btn-play" title="Auto-play animation"><i class="fa-solid fa-play"></i> Auto-Play</button>
+                    <a class="control-btn control-link" href="{{ url_for('quiz_home') }}" title="Open dedicated quiz module">
+                        <i class="fa-solid fa-graduation-cap"></i> Quiz Module
+                    </a>
+                </div>
+
+                <div class="btn-row">
+                    <button type="submit" class="btn btn-inline btn-wide" id="run-btn" style="margin-top: 15px;">
+                        <i class="fa-solid fa-lock"></i> <span id="btn-text">Encrypt</span>
+                    </button>
+                    <button type="button" class="btn btn-inline btn-wide btn-ghost" id="run-decrypt-btn" style="margin-top: 15px;" disabled>
+                        <i class="fa-solid fa-unlock-keyhole"></i> <span>Decrypt</span>
+                    </button>
+                </div>
+            </form>
+
+            <p class="persist-hint mono"><i class="fa-solid fa-floppy-disk"></i> Your settings, last run, and quiz scores are saved in this browser.</p>
+
+            <h2 style="margin-top: 2rem;"><i class="fa-solid fa-box-open"></i> Results</h2>
+
+            <div class="form-group">
+                <label>Encrypted / Hashed Form (Transit Data)</label>
+                <textarea id="encrypted-output" class="readonly-field" readonly placeholder="Calculated output will appear here..."></textarea>
+            </div>
+
+            <div class="form-group" id="decrypt-group">
+                <label>Decrypted Output</label>
+                <textarea id="decrypted-output" class="readonly-field" readonly placeholder="Decrypted text will appear here..."></textarea>
+            </div>
+        </div>
+
+        <!-- RIGHT PANEL: Visualization Canvas -->
+        <div class="panel panel-canvas">
+            <div class="canvas-head">
+                <h2 style="margin-bottom: 0;"><i class="fa-solid fa-eye"></i> Operations Canvas</h2>
+                <div class="canvas-actions">
+                    <button type="button" class="chip-btn" id="btn-toggle-desc"><i class="fa-solid fa-circle-info"></i> Description</button>
+                    <button type="button" class="chip-btn" id="btn-toggle-steps-header" title="Open steps in a large window"><i class="fa-solid fa-list"></i> Steps</button>
+                </div>
+            </div>
+
+            <div id="algo-canvas" class="canvas-full">
+                <div id="flow-bar" class="flow-bar"></div>
+
+                <!-- Per-algorithm "hero" visuals -->
+                <div id="caesar-visuals" class="hero-visuals" style="display:none;"></div>
+                <div id="aes-visuals" class="hero-visuals" style="display:none;"></div>
+                <div id="vigenere-visuals" class="hero-visuals" style="display:none;"></div>
+                <div id="rsa-visuals" class="hero-visuals" style="display:none;"></div>
+                <div id="sha256-visuals" class="hero-visuals" style="display:none;"></div>
+
+                <!-- Technique info + solved example -->
+                <section id="tech-info" class="tech-info" aria-live="polite"></section>
+
+                <!-- Step log with toolbar -->
+                <div id="steps-panel" class="steps-panel is-empty">
+                    <div class="steps-toolbar">
+                        <div class="steps-toolbar-left">
+                            <span id="steps-toolbar-title" class="steps-toolbar-title">Operation steps</span>
+                            <span id="steps-line-count" class="steps-meta"></span>
+                        </div>
+                        <div class="steps-toolbar-actions">
+                            <button type="button" class="chip-btn chip-btn-sm" id="btn-copy-steps" title="Copy steps to clipboard"><i class="fa-regular fa-copy"></i> Copy</button>
+                            <button type="button" class="chip-btn chip-btn-sm" id="btn-steps-expand" title="Expand in modal"><i class="fa-solid fa-up-right-and-down-left-from-center"></i> Expand</button>
+                        </div>
+                    </div>
+                    <section id="steps-log" class="steps-log-body mono" aria-live="polite"></section>
+                </div>
+
+                <div class="canvas-grid canvas-grid-single" id="standard-canvas">
+                    <!-- Keep container for compatibility; not used for display now -->
+                    <div id="steps-output" class="steps-container hidden"></div>
+                    <!-- Old character strip removed (was showing legacy visuals) -->
+                    <div id="char-strip" class="char-strip" style="display:none;"></div>
+                </div>
+
+                <div id="crypto-status" class="canvas-status">
+                    Awaiting configuration...
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="{{ url_for('static', filename='js/cryptolabStorage.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/animCaesar.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/animVigenere.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/animAES.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/animRSA.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/animSHA.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+
+    <!-- Modal -->
+    <div id="modal-overlay" class="modal-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+        <div class="modal-box">
+            <div class="modal-head">
+                <h3 id="modal-title" class="modal-title">Details</h3>
+                <button type="button" id="modal-close" class="modal-close" aria-label="Close"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div id="modal-body" class="modal-body mono"></div>
+        </div>
+    </div>
+</body>
+</html>
+

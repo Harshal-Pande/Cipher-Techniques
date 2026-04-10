@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CryptoLab | Quiz Levels</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800;900&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body class="home-body">
+    <div class="home-bg"></div>
+
+    <header class="home-header">
+        <div class="home-brand">
+            <div class="home-badge"><i class="fa-solid fa-signal"></i></div>
+            <div>
+                <div class="home-title">Choose Level</div>
+                <div class="home-subtitle mono">Technique: {{ technique|upper }}</div>
+            </div>
+        </div>
+        <div class="home-cta">
+            <a class="btn btn-inline btn-ghost" href="{{ url_for('quiz_home') }}"><i class="fa-solid fa-arrow-left"></i> Techniques</a>
+        </div>
+    </header>
+
+    <main class="home-main">
+        <section class="home-section">
+            <div class="section-head">
+                <h2><i class="fa-solid fa-list-check"></i> Levels</h2>
+                <p>Pick difficulty. Each level has <strong>10 questions</strong> with timer, scoring, and highscore.</p>
+            </div>
+
+            <div class="card-grid">
+                <article class="tech-card">
+                    <div class="tech-icon quiz"><i class="fa-solid fa-leaf"></i></div>
+                    <h3>Easy (10)</h3>
+                    <p>Basics and definitions.</p>
+                    <div class="card-actions">
+                        <a class="btn btn-inline" href="{{ url_for('quiz_run', technique=technique, level='easy') }}">Start</a>
+                    </div>
+                </article>
+
+                <article class="tech-card">
+                    <div class="tech-icon quiz"><i class="fa-solid fa-bolt"></i></div>
+                    <h3>Medium (10)</h3>
+                    <p>Apply formulas and identify steps.</p>
+                    <div class="card-actions">
+                        <a class="btn btn-inline" href="{{ url_for('quiz_run', technique=technique, level='medium') }}">Start</a>
+                    </div>
+                </article>
+
+                <article class="tech-card">
+                    <div class="tech-icon quiz"><i class="fa-solid fa-skull"></i></div>
+                    <h3>Hard (10)</h3>
+                    <p>Edge cases, deeper concepts, and reasoning.</p>
+                    <div class="card-actions">
+                        <a class="btn btn-inline" href="{{ url_for('quiz_run', technique=technique, level='hard') }}">Start</a>
+                    </div>
+                </article>
+            </div>
+        </section>
+    </main>
+</body>
+</html>
+
