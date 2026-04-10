@@ -109,6 +109,11 @@ header p.subtitle {
     background: radial-gradient(circle at center, rgba(30, 41, 59, 0.5), var(--panel-bg));
 }
 
+.panel.panel-canvas #algo-canvas {
+    flex: 1 1 auto;
+    min-height: 0;
+}
+
 .canvas-head {
     display: flex;
     align-items: center;
@@ -231,7 +236,7 @@ header p.subtitle {
     justify-content: center;
     margin-bottom: 0.75rem;
     flex: 1 1 auto;
-    min-height: clamp(360px, 64vh, 920px);
+    min-height: clamp(520px, 74vh, 1100px);
     border: 1px dashed rgba(255,255,255,0.08);
     border-radius: 12px;
     background: rgba(0,0,0,0.15);
@@ -241,7 +246,12 @@ header p.subtitle {
 
 /* AES lab is tall — give it extra room when active */
 #aes-visuals.hero-visuals {
-    min-height: clamp(420px, 70vh, 1000px);
+    min-height: clamp(620px, 80vh, 1200px);
+}
+
+/* RSA lab can be tall too */
+#rsa-visuals.hero-visuals {
+    min-height: clamp(560px, 76vh, 1150px);
 }
 
 .steps-panel {
@@ -295,7 +305,7 @@ header p.subtitle {
 .steps-log-body {
     margin: 0;
     padding: 10px 12px 12px;
-    max-height: min(26vh, 380px);
+    max-height: min(14vh, 210px);
     overflow: auto;
     font-size: 0.8rem;
     line-height: 1.5;
@@ -398,6 +408,12 @@ header p.subtitle {
     position: sticky;
     bottom: 0;
     backdrop-filter: blur(8px);
+}
+
+/* Keep status bar slim so labs stay visible */
+.canvas-status {
+    padding: 0.75rem 1rem;
+    font-size: 0.9rem;
 }
 
 .canvas-grid-single {
