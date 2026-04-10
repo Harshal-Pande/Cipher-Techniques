@@ -1,4 +1,5 @@
 window.AnimAES = {
+    MAX_SLOTS: 18,
     ensureVisuals: function() {
         const host = document.getElementById('aes-visuals');
         if (!host) return null;
@@ -60,8 +61,11 @@ window.AnimAES = {
         const bench = document.getElementById('aes-byte-bench');
         if (!bench) return;
         bench.innerHTML = '';
-        const t = (text || '').slice(0, 6);
-        for (let i = 0; i < 6; i++) {
+        const raw = (text || '').toString();
+        const n = Math.min(Math.max(raw.length, 1), this.MAX_SLOTS);
+        bench.classList.toggle('aes-byte-bench-compact', n > 8);
+        const t = raw.slice(0, n).padEnd(n, ' ');
+        for (let i = 0; i < n; i++) {
             const ch = i < t.length ? t[i] : ' ';
             const slot = document.createElement('div');
             slot.className = 'aes-byte-slot';
@@ -159,6 +163,7 @@ window.AnimAES = {
 
         const plain = input || '';
         let bytesAnimated = false;
+        const slotCount = Math.min(Math.max(plain.length, 1), this.MAX_SLOTS);
 
         for (let i = 0; i < steps.length; i++) {
             if (!steps[i]) continue;
@@ -168,8 +173,11 @@ window.AnimAES = {
                 bytesAnimated = true;
                 this.highlightPipeline('bytes');
                 if (phaseEl) phaseEl.innerText = 'Step 2: Plaintext → UTF-8 bytes (per character)';
-                for (let j = 0; j < Math.min(plain.length, 6); j++) {
+                for (let j = 0; j < slotCount; j++) {
                     await this.animateCharToByte(j, plain[j]);
+                }
+                if (plain.length > slotCount && phaseEl) {
+                    phaseEl.innerText = `Step 2: UTF-8 bytes (showing first ${slotCount}/${plain.length})`;
                 }
             }
 
