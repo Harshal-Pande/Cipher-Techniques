@@ -164,7 +164,10 @@ document.addEventListener('DOMContentLoaded', () => {
         const asHtml = opts && opts.html;
         modalBody.classList.toggle('modal-body--html', !!asHtml);
         if (asHtml) modalBody.innerHTML = text || '';
-        else modalBody.innerText = text || '';
+        else {
+            modalBody.innerHTML = '';
+            modalBody.innerText = text || '';
+        }
         modalOverlay.classList.remove('hidden');
     }
 

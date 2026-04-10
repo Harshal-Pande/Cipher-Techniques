@@ -1906,6 +1906,13 @@ input:focus, select:focus, textarea:focus {
 .preview-line { font-size: 1.1rem; font-weight: 900; margin-bottom: 6px; color: #a7f3d0; }
 .preview-mini { font-size: 0.8rem; color: var(--text-secondary); }
 .home-section { margin-top: 26px; }
+.home-main > .quiz-summary-section:first-child { margin-top: 0; }
+.quiz-summary-card {
+    padding: 14px 18px;
+    border-radius: 16px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    background: rgba(0, 0, 0, 0.22);
+}
 .section-head h2 { margin-bottom: 4px; }
 .section-head p { margin-top: 0; color: var(--text-secondary); }
 .card-grid { display:grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; margin-top: 12px; }
