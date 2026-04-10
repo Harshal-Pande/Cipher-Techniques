@@ -274,6 +274,8 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
+    let restoringState = false;
+
     // Handle Algorithm Change Logic
     algoSelect.addEventListener('change', (e) => {
         const val = e.target.value;
@@ -285,10 +287,10 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById(`${val}-visuals`) && (document.getElementById(`${val}-visuals`).style.display = 'flex');
 
         charStrip.innerHTML = '';
-        flowBar.style.opacity = '0';
+        if (!restoringState) flowBar.style.opacity = '0';
         stepsOutput.innerHTML = '';
         setTechniqueInfo(val);
-        setStepsText('', []);
+        if (!restoringState) setStepsText('', []);
 
         switch (val) {
             case 'caesar':
@@ -323,17 +325,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 keyGroup.classList.add('hidden');
                 keyInput.required = false;
         }
+        if (!restoringState) schedulePersist();
     });
-
-    // Apply deep-link selections after handlers are ready
-    if (deepMode === 'anim') btnPlay.click();
-    if (deepAlgo && algoSelect) {
-        const has = Array.from(algoSelect.options).some(o => o.value === deepAlgo);
-        if (has) {
-            algoSelect.value = deepAlgo;
-            algoSelect.dispatchEvent(new Event('change'));
-        }
-    }
 
     // Export delay utility to window for anim instances
     window.animDelay = () => new Promise(res => setTimeout(res, baseDelay));
@@ -348,6 +341,84 @@ document.addEventListener('DOMContentLoaded', () => {
     let cacheData = null;
     let cacheInputText = "";
     let cacheAlgo = "";
+
+    let persistTimer = null;
+    function schedulePersist() {
+        if (!window.CryptolabStorage) return;
+        if (persistTimer) clearTimeout(persistTimer);
+        persistTimer = setTimeout(() => {
+            persistTimer = null;
+            const snap = window.__lastStepsSnapshot || { title: '', steps: [] };
+            window.CryptolabStorage.saveSimulator({
+                algorithm: algoSelect.value,
+                plaintext: plaintextArea ? plaintextArea.value : '',
+                key: keyInput.value,
+                speedSlider: speedSlider.value,
+                encryptedOutput: encryptedOutput.value,
+                decryptedOutput: decryptedOutput.value,
+                cacheData,
+                cacheInputText,
+                cacheAlgo,
+                flowBarText: flowBar ? flowBar.innerText : '',
+                flowBarVisible: !!(flowBar && flowBar.style.opacity === '1'),
+                lastStepsTitle: snap.title,
+                lastSteps: snap.steps
+            });
+        }, 450);
+    }
+
+    function applyLoadedState(st) {
+        if (!st || !st.algorithm) return;
+        restoringState = true;
+        if (plaintextArea && st.plaintext != null) plaintextArea.value = st.plaintext;
+        if (st.key != null) keyInput.value = st.key;
+        if (st.speedSlider && speedSlider) {
+            speedSlider.value = st.speedSlider;
+            speedSlider.dispatchEvent(new Event('input'));
+        }
+        const has = Array.from(algoSelect.options).some(o => o.value === st.algorithm);
+        if (has) {
+            algoSelect.value = st.algorithm;
+            algoSelect.dispatchEvent(new Event('change'));
+        }
+        restoringState = false;
+        if (st.encryptedOutput != null) encryptedOutput.value = st.encryptedOutput;
+        if (st.decryptedOutput != null) decryptedOutput.value = st.decryptedOutput;
+        if (st.cacheData && st.cacheAlgo) {
+            cacheData = st.cacheData;
+            cacheInputText = st.cacheInputText || '';
+            cacheAlgo = st.cacheAlgo;
+            if (decryptBtn) {
+                decryptBtn.disabled = st.cacheAlgo === 'sha256' || !st.cacheData;
+            }
+        }
+        if (flowBar && st.flowBarText) {
+            flowBar.innerText = st.flowBarText;
+            flowBar.style.opacity = st.flowBarVisible ? '1' : '0';
+        }
+        if (Array.isArray(st.lastSteps) && st.lastSteps.length) {
+            setStepsText(st.lastStepsTitle || 'Saved steps', st.lastSteps);
+        }
+    }
+
+    if (plaintextArea) {
+        plaintextArea.addEventListener('input', schedulePersist);
+    }
+    keyInput.addEventListener('input', schedulePersist);
+
+    const savedSim = window.CryptolabStorage && window.CryptolabStorage.loadSimulator();
+    if (savedSim) applyLoadedState(savedSim);
+
+    if (deepMode === 'anim') btnPlay.click();
+    if (deepAlgo && algoSelect) {
+        const has = Array.from(algoSelect.options).some(o => o.value === deepAlgo);
+        if (has) {
+            restoringState = true;
+            algoSelect.value = deepAlgo;
+            algoSelect.dispatchEvent(new Event('change'));
+            restoringState = false;
+        }
+    }
 
     // Form Submit Logic (Encrypt Phase)
     form.addEventListener('submit', async (e) => {
@@ -448,6 +519,8 @@ document.addEventListener('DOMContentLoaded', () => {
             // Enable decrypt button if reversible
             if (decryptBtn) decryptBtn.disabled = (algo === 'sha256');
 
+            schedulePersist();
+
         } catch (error) {
             stepsOutput.innerHTML = `<div class="transform-card" style="border-left-color: var(--error); display:block;"><span style="color:var(--error);"><i class="fa-solid fa-triangle-exclamation"></i> Error: ${error.message}</span></div>`;
             cryptoStatus.innerText = "Encryption Failed!";
@@ -497,6 +570,7 @@ document.addEventListener('DOMContentLoaded', () => {
             cryptoStatus.innerText = "Decryption Complete. Message Recovered.";
             cryptoStatus.style.color = "var(--success)";
             decryptBtn.disabled = false;
+            schedulePersist();
         });
     }
 

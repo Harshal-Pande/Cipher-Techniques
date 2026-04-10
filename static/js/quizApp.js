@@ -115,8 +115,12 @@
   function finish() {
     stopTimer();
     const high = getHigh();
-    if (score > high) setHigh(score);
+    const beatHigh = score > high;
+    if (beatHigh) setHigh(score);
     renderHigh();
+    if (window.CryptolabStorage && tech && level) {
+      window.CryptolabStorage.recordQuizFinish(tech, level, score, beatHigh);
+    }
 
     qTitle.innerText = 'Quiz complete';
     qSub.innerText = `Final score: ${score} • High score: ${getHigh()}`;
