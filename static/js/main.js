@@ -74,6 +74,15 @@ document.addEventListener('DOMContentLoaded', () => {
             ],
             detail: 'AES is the workhorse of TLS, disk encryption, and VPNs. The animation highlights the idea of rounds (SubBytes, ShiftRows, MixColumns, AddRoundKey) without drawing every gate.',
             example: 'Concept: one block of plaintext bytes → rounds under key schedule → opaque ciphertext bytes.',
+            exampleSteps: [
+                'Solved example (conceptual, 1-block view):',
+                '1) Plaintext = "HELLO" → UTF-8 bytes',
+                '2) PKCS#7 pad to 16 bytes',
+                '3) Choose random IV (16 bytes)',
+                '4) CBC: block0 = pad(plaintext) XOR IV',
+                '5) AES-256 rounds (14): SubBytes → ShiftRows → MixColumns → AddRoundKey',
+                '6) Output = Base64( IV || ciphertext )'
+            ],
             modalHtml: '<p>The Advanced Encryption Standard (AES) replaced DES for most purposes. It is <strong>symmetric</strong>: the same secret key encrypts and decrypts (unlike RSA).</p><h4>CBC in one sentence</h4><p>Each plaintext block is XORed with the previous ciphertext block (first block uses the IV), then encrypted—so patterns in plaintext do not repeat visibly in ciphertext.</p><h4>Why you see hex and Base64</h4><p>Binary ciphertext is shown as hex for debugging; Base64 is a text-safe transport encoding, not extra encryption.</p>'
         },
         vigenere: {
@@ -110,6 +119,15 @@ document.addEventListener('DOMContentLoaded', () => {
             ],
             detail: 'Compare the hash of your message with a one-character variant to see how sensitive the output is.',
             example: 'Example: "hello" → a fixed 64-hex digest; change one letter → completely different digest.',
+            exampleSteps: [
+                'Solved example (workflow):',
+                '1) Input message → UTF-8 bytes',
+                '2) Pad message (SHA-256 padding) and split into 512-bit blocks',
+                '3) Initialize hash state (8 words)',
+                '4) For each block: 64 rounds of compression',
+                '5) Emit final 256-bit digest → 64 hex characters',
+                '6) Avalanche check: change 1 char → many hex chars differ'
+            ],
             modalHtml: '<p>A <strong>hash function</strong> should be fast to compute, hard to invert, and collision-resistant (hard to find two inputs with the same digest).</p><h4>Not encryption</h4><p>There is no secret key in basic SHA-256; anyone can recompute the hash of a candidate message. For keyed integrity use HMAC.</p><h4>Avalanche</h4><p>The demo perturbs your input slightly so you can count how many hex digits change—usually close to half of 64.</p>'
         }
     };
@@ -206,7 +224,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function openStepsModal() {
         const body = (window.__stepsPlainText || '').trim();
-        openModal('Full operation steps', body || '(No steps yet — run Encrypt.)', { html: false });
+        const algo = algoSelect.value || (techInfo && techInfo.dataset ? techInfo.dataset.selectedAlgo : '');
+        const info = TECHNIQUE_DICT[algo];
+        let extra = '';
+        if (info && Array.isArray(info.exampleSteps) && info.exampleSteps.length) {
+            extra = `\n\nSolved example\n${'─'.repeat(14)}\n` + info.exampleSteps.join('\n');
+        }
+        openModal('Full operation steps', (body || '(No steps yet — run Encrypt.)') + extra, { html: false });
     }
 
     // Modal open buttons (Description + Steps)
