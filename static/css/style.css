@@ -157,6 +157,8 @@ header p.subtitle {
     box-shadow: 0 20px 50px rgba(0,0,0,0.45);
     overflow: hidden;
     backdrop-filter: blur(10px);
+    display: flex;
+    flex-direction: column;
 }
 .modal-head {
     display: flex;
@@ -190,6 +192,8 @@ header p.subtitle {
     font-size: 0.9rem;
     line-height: 1.55;
     white-space: pre-wrap;
+    flex: 1 1 auto;
+    min-height: 0; /* required for overflow scroll inside flex */
 }
 .modal-body.modal-body--html {
     white-space: normal;
